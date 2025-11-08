@@ -35,12 +35,12 @@ const features = [
   {
     icon: Languages,
     title: "Multi-language Support",
-    description: "Connect in your language - full support for Hindi, English, and more"
+    description: "Connect in your language - full support for multiple languages worldwide"
   },
   {
     icon: Heart,
-    title: "Celebrating Indian Diversity",
-    description: "Embracing all cultures, traditions, and backgrounds across India"
+    title: "Celebrating Diversity",
+    description: "Embracing all cultures, traditions, and backgrounds from around the world"
   }
 ];
 
@@ -53,7 +53,7 @@ const Features = () => {
             Why Choose <span className="text-primary">VibeLink?</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Discover meaningful connections with features designed for modern India
+            Discover meaningful connections with features designed for modern dating
           </p>
         </div>
         

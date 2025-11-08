@@ -1,6 +1,5 @@
-import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/vibelink-logo.png";
+import logo from "@/assets/vibelink-icon.png";
 
 const Header = () => {
   return (
@@ -9,8 +8,7 @@ const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <img src={logo} alt="VibeLink Logo" className="w-12 h-12" />
-            <span className="text-2xl font-bold text-white">VibeLink</span>
+            <img src={logo} alt="VibeLink Logo" className="w-16 h-16" />
           </div>
           
           {/* Desktop Navigation */}

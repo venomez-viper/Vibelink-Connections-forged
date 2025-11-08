@@ -11,16 +11,16 @@ const Footer = () => {
               <Heart className="w-8 h-8 fill-white" />
               <span className="text-2xl font-bold">VibeLink</span>
             </div>
-            <p className="text-accent-foreground/90 mb-4">
-              India's modern dating platform for meaningful connections. 
+            <p className="text-white/90 mb-4">
+              Modern dating platform for meaningful connections nearby. 
               Join thousands finding love, friendship, and companionship.
             </p>
           </div>
           
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-accent-foreground/90">
+            <h3 className="font-semibold mb-4 text-white">Quick Links</h3>
+            <ul className="space-y-2 text-white/80">
               <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
               <li><a href="#" className="hover:text-white transition-colors">How It Works</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Safety Tips</a></li>
@@ -30,8 +30,8 @@ const Footer = () => {
           
           {/* Legal */}
           <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
-            <ul className="space-y-2 text-accent-foreground/90">
+            <h3 className="font-semibold mb-4 text-white">Legal</h3>
+            <ul className="space-y-2 text-white/80">
               <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Community Guidelines</a></li>
@@ -41,8 +41,8 @@ const Footer = () => {
         </div>
         
         {/* Bottom Bar */}
-        <div className="border-t border-white/20 pt-8 text-center text-accent-foreground/90">
-          <p>&copy; 2025 VibeLink | India's Modern Dating Platform</p>
+        <div className="border-t border-white/20 pt-8 text-center text-white/80">
+          <p>&copy; 2025 VibeLink | Modern Dating Platform</p>
         </div>
       </div>
     </footer>
