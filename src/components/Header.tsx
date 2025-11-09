@@ -1,15 +1,13 @@
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/vibelink-icon.png";
-
 const Header = () => {
-  return (
-    <header className="absolute top-0 left-0 right-0 z-50 bg-transparent">
+  return <header className="absolute top-0 left-0 right-0 z-50 bg-transparent">
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-1">
-            <img src={logo} alt="VibeLink Logo" className="w-16 h-16" />
-            <span className="text-2xl font-bold text-white">VibeLink</span>
+            <img src={logo} alt="VibeLink Logo" className="w-20 h-20" />
+            <span className="font-bold text-white px-0 mx-0 my-0 text-3xl">VibeLink</span>
           </div>
           
           {/* Desktop Navigation */}
@@ -36,8 +34,6 @@ const Header = () => {
           </div>
         </div>
       </div>
-    </header>
-  );
+    </header>;
 };
-
 export default Header;

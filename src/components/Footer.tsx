@@ -1,15 +1,13 @@
 import logo from "@/assets/vibelink-icon.png";
-
 const Footer = () => {
-  return (
-    <footer className="bg-primary text-white py-12 px-4">
+  return <footer className="bg-primary text-white py-12 px-4">
       <div className="container mx-auto">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-1 mb-4">
-              <img src={logo} alt="VibeLink Logo" className="w-16 h-16" />
-              <span className="text-2xl font-bold">VibeLink</span>
+              <img src={logo} alt="VibeLink Logo" className="w-18 h-18" />
+              <span className="font-bold text-3xl">VibeLink</span>
             </div>
             <p className="text-white/90 mb-4">
               Modern dating platform for meaningful connections nearby. 
@@ -45,8 +43,6 @@ const Footer = () => {
           <p>&copy; 2025 VibeLink | Modern Dating Platform</p>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
