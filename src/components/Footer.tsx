@@ -1,4 +1,4 @@
-import { Heart } from "lucide-react";
+import logo from "@/assets/vibelink-icon.png";
 
 const Footer = () => {
   return (
@@ -8,7 +8,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <Heart className="w-8 h-8 fill-white" />
+              <img src={logo} alt="VibeLink Logo" className="w-8 h-8" />
               <span className="text-2xl font-bold">VibeLink</span>
             </div>
             <p className="text-white/90 mb-4">

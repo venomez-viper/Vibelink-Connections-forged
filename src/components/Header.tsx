@@ -9,6 +9,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center gap-3">
             <img src={logo} alt="VibeLink Logo" className="w-16 h-16" />
+            <span className="text-2xl font-bold text-white">VibeLink</span>
           </div>
           
           {/* Desktop Navigation */}
