@@ -71,6 +71,60 @@ export type Database = {
         }
         Relationships: []
       }
+      matches: {
+        Row: {
+          compatibility_score: number
+          created_at: string
+          id: string
+          matched_user_id: string
+          user_id: string
+        }
+        Insert: {
+          compatibility_score?: number
+          created_at?: string
+          id?: string
+          matched_user_id: string
+          user_id: string
+        }
+        Update: {
+          compatibility_score?: number
+          created_at?: string
+          id?: string
+          matched_user_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null
