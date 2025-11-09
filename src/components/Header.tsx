@@ -7,8 +7,8 @@ const Header = () => {
   const isHomepage = location.pathname === "/";
   
   return (
-    <header className={`absolute top-0 left-0 right-0 z-50 ${isHomepage ? 'bg-transparent' : 'bg-primary'}`}>
-      <div className="container mx-auto px-4 py-3">
+    <header className={`${isHomepage ? 'absolute' : 'relative'} top-0 left-0 right-0 z-50 ${isHomepage ? 'bg-transparent' : 'bg-primary'} overflow-hidden`}>
+      <div className="container mx-auto px-4 md:px-[60px] py-5">
         <div className="flex items-center justify-between rounded-md mx-[5px] my-0 px-[3px] py-0">
           {/* Logo */}
           <Link to="/" className="flex items-center -space-x-3 hover:opacity-80 transition-opacity">
@@ -34,7 +34,7 @@ const Header = () => {
             <Button variant="ghost" className="text-white hover:text-accent hover:bg-white/10" asChild>
               <Link to="/auth">Login</Link>
             </Button>
-            <Button variant="hero" size="default" asChild>
+            <Button className="bg-white text-primary hover:bg-white/90 rounded-full font-semibold px-5" size="default" asChild>
               <Link to="/auth">Sign Up</Link>
             </Button>
           </div>
@@ -42,8 +42,8 @@ const Header = () => {
       </div>
       {/* Wavy Bottom Border - Only show on non-homepage */}
       {!isHomepage && (
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none transform translate-y-full">
-          <svg className="relative block w-full h-20" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <div className="absolute -bottom-px left-0 w-full overflow-hidden leading-[0]">
+          <svg className="block w-full h-[60px]" viewBox="0 0 1440 320" preserveAspectRatio="none">
             <path 
               fill="hsl(var(--background))" 
               fillOpacity="1"
