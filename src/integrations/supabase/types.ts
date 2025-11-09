@@ -128,6 +128,8 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          media_url: string | null
+          message_type: string
           read: boolean
           receiver_id: string
           sender_id: string
@@ -137,6 +139,8 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
+          media_url?: string | null
+          message_type?: string
           read?: boolean
           receiver_id: string
           sender_id: string
@@ -146,6 +150,8 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
+          media_url?: string | null
+          message_type?: string
           read?: boolean
           receiver_id?: string
           sender_id?: string
