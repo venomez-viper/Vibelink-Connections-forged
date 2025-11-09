@@ -17,6 +17,7 @@ import ProfileShowcase from "./pages/ProfileShowcase";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NearbyMatches from "./pages/NearbyMatches";
+import Connections from "./pages/Connections";
 import Blog from "./pages/Blog";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/discover" element={<Discover />} />
           <Route path="/requests" element={<Requests />} />
+          <Route path="/connections" element={<Connections />} />
           <Route path="/profile/:userId" element={<ProfileShowcase />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />

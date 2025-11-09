@@ -49,11 +49,11 @@ const Header = () => {
                   <span>Discover</span>
                 </Link>
                 <Link 
-                  to="/dashboard" 
+                  to="/connections" 
                   className="flex items-center gap-2 text-white hover:text-accent transition-colors font-medium"
                 >
                   <MessageCircle className="h-5 w-5" />
-                  <span>Messages</span>
+                  <span>Connections</span>
                 </Link>
                 <Link 
                   to="/profile-showcase" 
