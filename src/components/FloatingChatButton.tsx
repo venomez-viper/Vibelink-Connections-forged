@@ -91,7 +91,7 @@ const FloatingChatButton = ({ onOpenChat, conversations = [] }: FloatingChatButt
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "fixed bottom-4 right-4 h-14 w-14 rounded-full shadow-2xl z-40",
-          "bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90",
+          "bg-gradient-to-r from-[#FF4D6D] to-[#5A189A] hover:from-[#FF4D6D]/90 hover:to-[#5A189A]/90",
           "hover:scale-110 transition-all duration-200 hover-glow"
         )}
         size="icon"
