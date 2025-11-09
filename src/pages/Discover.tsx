@@ -86,9 +86,32 @@ const Discover = () => {
 
     setSending(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setSending(false);
+      return;
+    }
 
     const currentProfile = profiles[currentIndex];
+
+    // Check rate limit: 10 pending requests per hour
+    const { count, error: countError } = await supabase
+      .from('match_requests')
+      .select('*', { count: 'exact', head: true })
+      .eq('sender_id', user.id)
+      .eq('status', 'pending')
+      .gte('created_at', new Date(Date.now() - 3600000).toISOString());
+
+    if (countError) {
+      console.error("Error checking rate limit:", countError);
+    } else if (count && count >= 10) {
+      toast({
+        title: "Limit Reached",
+        description: "You can send 10 match requests per hour. Please wait before sending more.",
+        variant: "destructive",
+      });
+      setSending(false);
+      return;
+    }
 
     const { error } = await supabase.from("match_requests").insert({
       sender_id: user.id,
@@ -99,7 +122,7 @@ const Discover = () => {
     if (error) {
       toast({
         title: "Error",
-        description: "Failed to send request",
+        description: error.message || "Failed to send request",
         variant: "destructive",
       });
     } else {
