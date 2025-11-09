@@ -7,8 +7,8 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div className="md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <img src={logo} alt="VibeLink Logo" className="w-8 h-8" />
+            <div className="flex items-center gap-1 mb-4">
+              <img src={logo} alt="VibeLink Logo" className="w-16 h-16" />
               <span className="text-2xl font-bold">VibeLink</span>
             </div>
             <p className="text-white/90 mb-4">
