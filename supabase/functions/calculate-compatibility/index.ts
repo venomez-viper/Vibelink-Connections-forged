@@ -17,34 +17,75 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { userId } = await req.json();
+    
+    console.log("Calculating compatibility for user:", userId);
 
-    // Get current user's profile and preferences
-    const { data: userProfile } = await supabase
+    // Get current user's profile
+    const { data: userProfile, error: profileError } = await supabase
       .from("profiles")
-      .select("*, match_preferences(*), interests(*)")
+      .select("*")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
+
+    console.log("User profile:", userProfile, "Error:", profileError);
 
     if (!userProfile) {
+      console.error("Profile not found for user:", userId);
       return new Response(
         JSON.stringify({ error: "User profile not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const userPreferences = userProfile.match_preferences?.[0];
-    const userInterests = userProfile.interests?.map((i: any) => i.interest) || [];
+    // Get user's match preferences
+    const { data: userPreferences } = await supabase
+      .from("match_preferences")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    // Get user's interests
+    const { data: userInterestsData } = await supabase
+      .from("interests")
+      .select("*")
+      .eq("user_id", userId);
+
+    const userInterests = userInterestsData?.map((i: any) => i.interest) || [];
+    
+    console.log("User interests:", userInterests);
+    console.log("User preferences:", userPreferences);
 
     // Get all potential matches
-    const { data: allProfiles } = await supabase
+    const { data: allProfiles, error: allProfilesError } = await supabase
       .from("profiles")
-      .select("*, match_preferences(*), interests(*)")
+      .select("*")
       .neq("user_id", userId);
 
+    console.log("Found potential profiles:", allProfiles?.length);
+
+    if (allProfilesError) {
+      console.error("Error fetching profiles:", allProfilesError);
+    }
+
+    if (!allProfiles || allProfiles.length === 0) {
+      console.log("No other profiles found");
+      return new Response(
+        JSON.stringify({ matches: [] }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Calculate compatibility scores
-    const matches = allProfiles?.map((profile: any) => {
+    const matchesPromises = allProfiles.map(async (profile: any) => {
+      // Get interests for this profile
+      const { data: profileInterestsData } = await supabase
+        .from("interests")
+        .select("*")
+        .eq("user_id", profile.user_id);
+
+      const profileInterests = profileInterestsData?.map((i: any) => i.interest) || [];
+
       let score = 0;
-      const profileInterests = profile.interests?.map((i: any) => i.interest) || [];
 
       // Interest matching (40% weight)
       const commonInterests = userInterests.filter((interest: string) =>
@@ -96,15 +137,21 @@ serve(async (req) => {
           interests: profileInterests,
         },
       };
-    }) || [];
+    });
+
+    const matches = await Promise.all(matchesPromises);
+    console.log("Calculated matches:", matches.length);
 
     // Sort by compatibility score
     matches.sort((a, b) => b.compatibility_score - a.compatibility_score);
 
     // Store top matches in database
     const topMatches = matches.slice(0, 20);
+    
+    console.log("Storing top matches:", topMatches.length);
+
     for (const match of topMatches) {
-      await supabase
+      const { error: upsertError } = await supabase
         .from("matches")
         .upsert(
           {
@@ -114,7 +161,13 @@ serve(async (req) => {
           },
           { onConflict: "user_id,matched_user_id" }
         );
+
+      if (upsertError) {
+        console.error("Error upserting match:", upsertError);
+      }
     }
+
+    console.log("Successfully calculated compatibility");
 
     return new Response(
       JSON.stringify({ matches: topMatches }),
