@@ -1,4 +1,5 @@
 import { Heart } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-couple.png";
 
@@ -21,9 +22,9 @@ const Hero = () => {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Left column - Text content */}
           <div className="text-white space-y-6 text-center md:text-left">
-            <div className="inline-block px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium mb-4 text-white">
+            <Link to="/nearby-matches" className="inline-block px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium mb-4 text-white hover:bg-white/20 transition-colors">
               Connect with Nearby Singles 📍
-            </div>
+            </Link>
             
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white">
               Welcome to <span className="text-white">VibeLink</span>
@@ -35,11 +36,11 @@ const Hero = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4">
-              <Button size="xl" variant="hero">
-                Sign Up Free
+              <Button size="xl" variant="hero" asChild className="animate-pulse hover:animate-none">
+                <Link to="/auth">Sign Up Free</Link>
               </Button>
-              <Button size="xl" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
-                Login
+              <Button size="xl" variant="outline" className="border-white text-white hover:bg-white hover:text-primary" asChild>
+                <Link to="/auth">Login</Link>
               </Button>
             </div>
             

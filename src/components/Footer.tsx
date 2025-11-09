@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import logo from "@/assets/vibelink-logo-new.png";
 const Footer = () => {
   return <footer className="bg-primary text-white py-12 px-4">
@@ -19,10 +20,10 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4 text-white">Quick Links</h3>
             <ul className="space-y-2 text-white/80">
-              <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">How It Works</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Safety Tips</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+              <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
+              <li><Link to="/how-it-works" className="hover:text-white transition-colors">How It Works</Link></li>
+              <li><Link to="/safety" className="hover:text-white transition-colors">Safety Tips</Link></li>
+              <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
             </ul>
           </div>
           
@@ -30,10 +31,10 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4 text-white">Legal</h3>
             <ul className="space-y-2 text-white/80">
-              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Community Guidelines</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
+              <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link to="/community-guidelines" className="hover:text-white transition-colors">Community Guidelines</Link></li>
+              <li><Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
             </ul>
           </div>
         </div>
