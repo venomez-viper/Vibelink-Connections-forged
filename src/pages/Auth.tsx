@@ -63,19 +63,9 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Pink Wavy Header Background */}
-      <div className="relative bg-primary">
-        <Header />
-        <div className="h-32"></div>
-        {/* Wavy Bottom */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none">
-          <svg className="relative block w-full h-24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="#ffffff"></path>
-          </svg>
-        </div>
-      </div>
+      <Header />
       
-      <div className="flex-1 -mt-12 pb-20 px-4 bg-white">
+      <div className="flex-1 pt-32 pb-20 px-4 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5">
         <div className="container mx-auto max-w-md">
           <Card className="p-8 shadow-xl">
             <div className="text-center mb-8">
