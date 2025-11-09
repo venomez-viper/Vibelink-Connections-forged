@@ -34,39 +34,48 @@ const GlobalChat = () => {
   };
 
   const loadConversations = async (userId: string) => {
-    // Fetch matches (accepted match requests)
+    // Fetch matches where user_id equals current user
     const { data: matches, error } = await supabase
       .from('matches')
       .select(`
         id,
-        user1_id,
-        user2_id,
-        profiles!matches_user1_id_fkey(user_id, first_name, profile_photo_url),
-        profiles_matches_user2_id_fkey:profiles!matches_user2_id_fkey(user_id, first_name, profile_photo_url)
+        matched_user_id
       `)
-      .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+      .eq('user_id', userId);
 
     if (error) {
       console.error("Error loading conversations:", error);
       return;
     }
 
+    // Fetch profile details for matched users
+    const matchedUserIds = matches?.map(m => m.matched_user_id) || [];
+    
+    if (matchedUserIds.length === 0) {
+      setConversations([]);
+      return;
+    }
+
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, first_name, profile_photo_url')
+      .in('user_id', matchedUserIds);
+
     // Transform matches into conversations
     const convos: Conversation[] = matches?.map((match: any) => {
-      const otherUser = match.user1_id === userId 
-        ? match.profiles_matches_user2_id_fkey 
-        : match.profiles;
+      const profile = profiles?.find(p => p.user_id === match.matched_user_id);
       
       return {
-        id: match.id,
-        userId: otherUser.user_id,
-        name: otherUser.first_name || "Unknown User",
-        avatar: otherUser.profile_photo_url,
+        id: match.id, // This is the match UUID - used as conversation_id
+        userId: match.matched_user_id,
+        name: profile?.first_name || "Unknown User",
+        avatar: profile?.profile_photo_url,
         lastMessage: "Start chatting...",
         unreadCount: 0
       };
     }) || [];
 
+    console.log("Loaded conversations:", convos);
     setConversations(convos);
   };
 

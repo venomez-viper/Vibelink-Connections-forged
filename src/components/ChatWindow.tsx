@@ -52,6 +52,8 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
   }, [messages]);
 
   const loadMessages = async () => {
+    console.log("Loading messages for conversation:", conversationId);
+    
     const { data, error } = await supabase
       .from("messages")
       .select("*")
@@ -60,18 +62,26 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
 
     if (error) {
       console.error("Error loading messages:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load messages",
+        variant: "destructive",
+      });
       return;
     }
 
+    console.log("Loaded messages:", data);
     setMessages(data || []);
 
     // Mark messages as read
-    await supabase
-      .from("messages")
-      .update({ read: true })
-      .eq("conversation_id", conversationId)
-      .eq("receiver_id", currentUserId)
-      .eq("read", false);
+    if (data && data.length > 0) {
+      await supabase
+        .from("messages")
+        .update({ read: true })
+        .eq("conversation_id", conversationId)
+        .eq("receiver_id", currentUserId)
+        .eq("read", false);
+    }
   };
 
   const subscribeToMessages = () => {
@@ -116,14 +126,22 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
 
-    const { error } = await supabase.from("messages").insert({
+    console.log("Sending message:", {
       conversation_id: conversationId,
       sender_id: currentUserId,
       receiver_id: otherUser.id,
       content: newMessage,
     });
 
+    const { data, error } = await supabase.from("messages").insert({
+      conversation_id: conversationId,
+      sender_id: currentUserId,
+      receiver_id: otherUser.id,
+      content: newMessage,
+    }).select();
+
     if (error) {
+      console.error("Error sending message:", error);
       toast({
         title: "Error",
         description: "Failed to send message",
@@ -132,6 +150,7 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
       return;
     }
 
+    console.log("Message sent successfully:", data);
     setNewMessage("");
   };
 
