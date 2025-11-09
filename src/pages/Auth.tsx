@@ -65,7 +65,7 @@ const Auth = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
-      <div className="flex-1 pt-44 pb-20 px-4">
+      <div className="flex-1 flex items-center justify-center px-4 py-8 mt-20">
         <div className="container mx-auto max-w-md">
           <Card className="p-8 shadow-xl">
             <div className="text-center mb-8">
