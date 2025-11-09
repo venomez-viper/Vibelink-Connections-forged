@@ -7,7 +7,11 @@ import Index from "./pages/Index";
 import HowItWorks from "./pages/HowItWorks";
 import Safety from "./pages/Safety";
 import About from "./pages/About";
-import Auth from "./pages/Auth";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
+import Dashboard from "./pages/Dashboard";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import NearbyMatches from "./pages/NearbyMatches";
 import Blog from "./pages/Blog";
 import Terms from "./pages/Terms";
@@ -29,7 +33,11 @@ const App = () => (
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/safety" element={<Safety />} />
           <Route path="/about" element={<About />} />
-          <Route path="/auth" element={<Auth />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/nearby-matches" element={<NearbyMatches />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/terms" element={<Terms />} />

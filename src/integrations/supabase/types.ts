@@ -14,7 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      interests: {
+        Row: {
+          created_at: string
+          id: string
+          interest: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interest: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interest?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      match_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          max_age: number
+          min_age: number
+          preferred_gender: string | null
+          preferred_location: string | null
+          show_nearby: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_age?: number
+          min_age?: number
+          preferred_gender?: string | null
+          preferred_location?: string | null
+          show_nearby?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_age?: number
+          min_age?: number
+          preferred_gender?: string | null
+          preferred_location?: string | null
+          show_nearby?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          bio: string | null
+          created_at: string
+          email: string
+          first_name: string
+          gender: string | null
+          id: string
+          location: string | null
+          profile_photo_url: string | null
+          tagline: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          bio?: string | null
+          created_at?: string
+          email: string
+          first_name: string
+          gender?: string | null
+          id?: string
+          location?: string | null
+          profile_photo_url?: string | null
+          tagline?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          bio?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          gender?: string | null
+          id?: string
+          location?: string | null
+          profile_photo_url?: string | null
+          tagline?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

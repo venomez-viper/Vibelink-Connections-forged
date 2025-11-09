@@ -37,10 +37,10 @@ const Hero = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4">
               <Button size="xl" variant="hero" asChild className="animate-pulse hover:animate-none">
-                <Link to="/auth">Sign Up Free</Link>
+                <Link to="/signup">Sign Up Free</Link>
               </Button>
               <Button size="xl" variant="outline" className="border-white text-white hover:bg-white hover:text-primary" asChild>
-                <Link to="/auth">Login</Link>
+                <Link to="/login">Login</Link>
               </Button>
             </div>
             

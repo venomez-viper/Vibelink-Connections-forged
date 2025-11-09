@@ -32,10 +32,10 @@ const Header = () => {
           {/* Auth Buttons */}
           <div className="flex items-center gap-3">
             <Button variant="ghost" className="text-white hover:text-accent hover:bg-white/10" asChild>
-              <Link to="/auth">Login</Link>
+              <Link to="/login">Login</Link>
             </Button>
             <Button className="bg-white text-primary hover:bg-white/90 rounded-full font-semibold px-5" size="default" asChild>
-              <Link to="/auth">Sign Up</Link>
+              <Link to="/signup">Sign Up</Link>
             </Button>
           </div>
         </div>
