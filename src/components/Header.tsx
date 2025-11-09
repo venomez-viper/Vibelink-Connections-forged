@@ -6,7 +6,7 @@ const Header = () => {
         <div className="flex items-center justify-between rounded-md mx-[3px] my-0 px-[3px] py-[2px]">
           {/* Logo */}
           <div className="flex items-center gap-0 -space-x-1">
-            <img src={logo} alt="VibeLink Logo" className="w-16 h-16 -mr-2" />
+            <img src={logo} alt="VibeLink Logo" className="w-24 h-24 -mr-2" />
             <span className="font-freestyle text-white text-5xl leading-none">VibeLink</span>
           </div>
           
