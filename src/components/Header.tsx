@@ -13,7 +13,7 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center -space-x-3 group">
             <img src={logo} alt="VibeLink Logo" className="w-24 h-24 transition-transform group-hover:scale-105" />
-            <span className="font-freestyle text-gradient-brand text-5xl leading-none -ml-1 hover-glow">
+            <span className="font-freestyle text-white text-5xl leading-none -ml-1 hover-glow drop-shadow-lg">
               VibeLink
             </span>
           </Link>

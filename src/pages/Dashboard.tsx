@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import FloatingChatButton from "@/components/FloatingChatButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Heart, MessageCircle, Settings, TrendingUp, MapPin } from "lucide-react";
+import { User, Heart, MessageCircle, Settings, TrendingUp, MapPin, UserCircle, Compass } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ChatWindow from "@/components/ChatWindow";
 import PhotoUpload from "@/components/PhotoUpload";
@@ -178,6 +179,41 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Button
+              onClick={() => navigate("/discover")}
+              className="h-24 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white"
+              size="lg"
+            >
+              <div className="flex flex-col items-center gap-2">
+                <Compass className="h-8 w-8" />
+                <span className="text-lg font-semibold">Discover New People</span>
+              </div>
+            </Button>
+            <Button
+              onClick={() => navigate("/requests")}
+              className="h-24 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+              size="lg"
+            >
+              <div className="flex flex-col items-center gap-2">
+                <Heart className="h-8 w-8" />
+                <span className="text-lg font-semibold">Match Requests</span>
+              </div>
+            </Button>
+            <Button
+              onClick={() => navigate(`/profile/${user?.id}`)}
+              variant="outline"
+              className="h-24"
+              size="lg"
+            >
+              <div className="flex flex-col items-center gap-2">
+                <UserCircle className="h-8 w-8" />
+                <span className="text-lg font-semibold">My Profile Showcase</span>
+              </div>
+            </Button>
+          </div>
 
           {/* Dashboard Tabs */}
           <Tabs defaultValue="matches" className="w-full">
@@ -415,6 +451,27 @@ const Dashboard = () => {
           onClose={() => setChatOpen(false)}
         />
       )}
+
+      <FloatingChatButton
+        onOpenChat={(conversation) => {
+          setSelectedChat({
+            conversationId: conversation.id,
+            otherUser: {
+              id: conversation.id,
+              name: conversation.name,
+              avatar: conversation.avatar,
+            },
+          });
+          setChatOpen(true);
+        }}
+        conversations={matches.slice(0, 5).map((match) => ({
+          id: match.matched_user_id,
+          name: match.profile.first_name,
+          avatar: match.profile.profile_photo_url,
+          lastMessage: "Start a conversation...",
+          unreadCount: 0,
+        }))}
+      />
 
       <Footer />
     </div>

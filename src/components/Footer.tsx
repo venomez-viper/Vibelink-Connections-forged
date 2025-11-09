@@ -8,7 +8,7 @@ const Footer = () => {
           <div className="md:col-span-2">
             <div className="flex items-center gap-1 mb-4 mx-0">
               <img src={logo} alt="VibeLink Logo" className="w-16 h-16" />
-              <span className="font-freestyle text-gradient-brand text-4xl hover-glow">VibeLink</span>
+              <span className="font-freestyle text-white text-4xl hover-glow drop-shadow-lg">VibeLink</span>
             </div>
             <p className="text-white/90 mb-4">
               Modern dating platform for meaningful connections nearby. 

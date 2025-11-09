@@ -10,6 +10,9 @@ import About from "./pages/About";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
+import Discover from "./pages/Discover";
+import Requests from "./pages/Requests";
+import ProfileShowcase from "./pages/ProfileShowcase";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NearbyMatches from "./pages/NearbyMatches";
@@ -36,6 +39,9 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/requests" element={<Requests />} />
+          <Route path="/profile/:userId" element={<ProfileShowcase />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/nearby-matches" element={<NearbyMatches />} />

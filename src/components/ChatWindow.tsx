@@ -31,6 +31,7 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isOnline, setIsOnline] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -40,7 +41,10 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
 
   useEffect(() => {
     loadMessages();
-    subscribeToMessages();
+    const unsubscribe = subscribeToMessages();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [conversationId]);
 
   useEffect(() => {
@@ -82,8 +86,24 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
+          const newMsg = payload.new as Message;
+          setMessages((prev) => {
+            // Prevent duplicates
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
           setIsTyping(false);
+
+          // Mark as read if it's not from current user
+          if (newMsg.receiver_id === currentUserId) {
+            supabase
+              .from("messages")
+              .update({ read: true })
+              .eq("id", newMsg.id)
+              .then(() => {
+                console.log("Message marked as read");
+              });
+          }
         }
       )
       .subscribe();
@@ -117,9 +137,14 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
 
   return (
     <Card className="fixed bottom-4 right-4 w-96 h-[600px] shadow-2xl z-50 flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-primary to-secondary text-white rounded-t-lg p-4">
+      {/* VibeLink watermark */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5 z-0">
+        <span className="text-6xl font-freestyle text-gradient-brand">VibeLink</span>
+      </div>
+
+      <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-primary to-secondary text-white rounded-t-lg p-4 relative z-10">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
+          <Avatar className="h-10 w-10 ring-2 ring-white">
             <AvatarImage src={otherUser.avatar} />
             <AvatarFallback className="bg-white text-primary">
               {otherUser.name[0]}
@@ -127,7 +152,11 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
           </Avatar>
           <div>
             <CardTitle className="text-white text-lg">{otherUser.name}</CardTitle>
-            {isTyping && <p className="text-xs text-white/80">typing...</p>}
+            {isTyping ? (
+              <p className="text-xs text-white/80">typing...</p>
+            ) : isOnline ? (
+              <p className="text-xs text-white/80">● Online</p>
+            ) : null}
           </div>
         </div>
         <Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
@@ -135,7 +164,7 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
         </Button>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
         {messages.map((message) => {
           const isSender = message.sender_id === currentUserId;
           return (
@@ -150,17 +179,22 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
                     : "bg-muted text-foreground"
                 }`}
               >
-                <p className="text-sm">{message.content}</p>
-                <p
-                  className={`text-xs mt-1 ${
-                    isSender ? "text-white/70" : "text-muted-foreground"
-                  }`}
-                >
-                  {new Date(message.created_at).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
+                <p className="text-sm break-words">{message.content}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p
+                    className={`text-xs ${
+                      isSender ? "text-white/70" : "text-muted-foreground"
+                    }`}
+                  >
+                    {new Date(message.created_at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                  {isSender && message.read && (
+                    <span className="text-xs text-white/70">✓✓</span>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -168,18 +202,24 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
         <div ref={messagesEndRef} />
       </CardContent>
 
-      <div className="p-4 border-t">
+      <div className="p-4 border-t relative z-10 bg-background">
         <div className="flex gap-2">
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-            placeholder="Type a message..."
+            onKeyPress={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+              }
+            }}
+            placeholder="Type a message... (emoji supported 😊)"
             className="flex-1"
           />
           <Button
             onClick={sendMessage}
-            className="bg-gradient-to-r from-primary to-secondary"
+            disabled={!newMessage.trim()}
+            className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
             size="icon"
           >
             <Send className="h-4 w-4" />
