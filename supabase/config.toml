@@ -1,4 +1,1 @@
 project_id = "dljauzkwdswxwpzutowq"
-
-[functions.calculate-compatibility]
-verify_jwt = false
