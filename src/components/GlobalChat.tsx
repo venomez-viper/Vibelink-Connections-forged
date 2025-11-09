@@ -89,19 +89,28 @@ const GlobalChat = () => {
   const getOrCreateConversation = async (user1Id: string, user2Id: string): Promise<string | null> => {
     // Sort IDs to ensure consistent ordering
     const [userId1, userId2] = [user1Id, user2Id].sort();
+    
+    console.log("Getting or creating conversation for:", userId1, "and", userId2);
 
     // Check if conversation exists
-    const { data: existing } = await supabase
+    const { data: existing, error: fetchError } = await supabase
       .from('conversations')
       .select('id')
       .or(`and(user1_id.eq.${userId1},user2_id.eq.${userId2}),and(user1_id.eq.${userId2},user2_id.eq.${userId1})`)
       .maybeSingle();
 
+    if (fetchError) {
+      console.error("Error fetching conversation:", fetchError);
+      return null;
+    }
+
     if (existing) {
+      console.log("Found existing conversation:", existing.id);
       return existing.id;
     }
 
     // Create new conversation
+    console.log("Creating new conversation...");
     const { data: newConv, error } = await supabase
       .from('conversations')
       .insert({
@@ -116,6 +125,7 @@ const GlobalChat = () => {
       return null;
     }
 
+    console.log("Created new conversation:", newConv?.id);
     return newConv?.id || null;
   };
 

@@ -66,6 +66,11 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
   }, [messages]);
 
   const loadMessages = async () => {
+    if (!conversationId) {
+      console.warn("No conversation ID provided");
+      return;
+    }
+    
     console.log("Loading messages for conversation:", conversationId);
     
     const { data, error } = await supabase
@@ -78,23 +83,27 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
       console.error("Error loading messages:", error);
       toast({
         title: "Error",
-        description: "Failed to load messages",
+        description: "Failed to load messages. Please try again.",
         variant: "destructive",
       });
       return;
     }
 
-    console.log("Loaded messages:", data);
+    console.log("Loaded", data?.length || 0, "messages");
     setMessages((data || []) as Message[]);
 
     // Mark messages as read
     if (data && data.length > 0) {
-      await supabase
+      const { error: updateError } = await supabase
         .from("messages")
         .update({ read: true })
         .eq("conversation_id", conversationId)
         .eq("receiver_id", currentUserId)
         .eq("read", false);
+      
+      if (updateError) {
+        console.error("Error marking messages as read:", updateError);
+      }
     }
   };
 
@@ -224,12 +233,23 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
 
   const sendMessage = async (messageType: 'text' | 'image' | 'voice' | 'emoji' = 'text', mediaUrl?: string) => {
     if (messageType === 'text' && !newMessage.trim()) return;
+    
+    if (!conversationId) {
+      toast({
+        title: "Error",
+        description: "No active conversation",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    const messageContent = newMessage || (messageType === 'image' ? '📷 Photo' : messageType === 'voice' ? '🎤 Voice message' : '');
+    
     console.log("Sending message:", {
       conversation_id: conversationId,
       sender_id: currentUserId,
       receiver_id: otherUser.id,
-      content: newMessage || (messageType === 'image' ? '📷 Photo' : messageType === 'voice' ? '🎤 Voice message' : ''),
+      content: messageContent,
       message_type: messageType,
       media_url: mediaUrl,
     });
@@ -238,7 +258,7 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
       conversation_id: conversationId,
       sender_id: currentUserId,
       receiver_id: otherUser.id,
-      content: newMessage || (messageType === 'image' ? '📷 Photo' : messageType === 'voice' ? '🎤 Voice message' : ''),
+      content: messageContent,
       message_type: messageType,
       media_url: mediaUrl,
     }).select();
@@ -247,14 +267,17 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
       console.error("Error sending message:", error);
       toast({
         title: "Error",
-        description: "Failed to send message",
+        description: `Failed to send message: ${error.message}`,
         variant: "destructive",
       });
       return;
     }
 
-    console.log("Message sent successfully:", data);
+    console.log("Message sent successfully!");
     setNewMessage("");
+    
+    // Stop typing indicator
+    updateTypingStatus(false);
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
