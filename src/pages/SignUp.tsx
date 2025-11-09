@@ -118,7 +118,6 @@ const SignUp = () => {
           .insert({
             user_id: authData.user.id,
             first_name: firstName,
-            email,
             gender,
             age: parseInt(age),
             bio,

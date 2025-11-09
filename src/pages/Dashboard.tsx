@@ -406,7 +406,7 @@ const Dashboard = () => {
                         </div>
                         <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                           <span className="text-sm text-muted-foreground">Email</span>
-                          <span className="font-medium">{profile?.email}</span>
+                          <span className="font-medium">{user?.email}</span>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                           <span className="text-sm text-muted-foreground">Age</span>
