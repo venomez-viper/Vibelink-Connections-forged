@@ -7,7 +7,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center gap-1">
             <img src={logo} alt="VibeLink Logo" className="w-20 h-20" />
-            <span className="font-freestyle text-white px-0 mx-0 my-0 text-3xl">VibeLink</span>
+            <span className="font-freestyle text-white px-0 mx-0 my-0 text-5xl">VibeLink</span>
           </div>
           
           {/* Desktop Navigation */}
