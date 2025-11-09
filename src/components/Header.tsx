@@ -8,7 +8,7 @@ const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-1">
-            <img src={logo} alt="VibeLink Logo" className="w-24 h-24" />
+            <img src={logo} alt="VibeLink Logo" className="w-16 h-16" />
             <span className="text-2xl font-bold text-white">VibeLink</span>
           </div>
           
