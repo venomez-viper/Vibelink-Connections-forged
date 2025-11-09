@@ -1,4 +1,4 @@
-import logo from "@/assets/vibelink-icon.png";
+import logo from "@/assets/vibelink-logo-new.png";
 const Footer = () => {
   return <footer className="bg-primary text-white py-12 px-4">
       <div className="container mx-auto">
