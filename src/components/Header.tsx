@@ -25,13 +25,13 @@ const Header = () => {
   }, []);
   
   return (
-    <header className={`${isHomepage ? 'absolute' : 'relative'} top-0 left-0 right-0 z-50 ${isHomepage ? 'bg-transparent' : 'bg-primary'} overflow-hidden`}>
-      <div className="container mx-auto px-4 md:px-[60px] py-5">
+    <header className={`${isHomepage ? 'absolute' : 'relative'} top-0 left-0 right-0 z-50 ${isHomepage ? 'bg-transparent' : 'bg-primary'} overflow-hidden sticky`}>
+      <div className="container mx-auto px-4 md:px-[60px] py-4 md:py-5">
         <div className="flex items-center justify-between rounded-md mx-[5px] my-0 px-[3px] py-0">
           {/* Logo */}
-          <Link to="/" className="flex items-center -space-x-3 group">
-            <img src={logo} alt="VibeLink Logo" className="w-24 h-24 transition-transform group-hover:scale-105" />
-            <span className="font-freestyle text-white text-5xl leading-none -ml-1 hover-glow drop-shadow-lg">
+          <Link to="/" className="flex items-center -space-x-2 sm:-space-x-3 group">
+            <img src={logo} alt="VibeLink Logo" className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 transition-transform group-hover:scale-105" />
+            <span className="font-freestyle text-white text-3xl sm:text-4xl md:text-5xl leading-none -ml-1 hover-glow drop-shadow-lg">
               VibeLink
             </span>
           </Link>
@@ -42,32 +42,25 @@ const Header = () => {
               // Logged in navigation
               <>
                 <Link 
-                  to="/discover" 
-                  className="flex items-center gap-2 text-white hover:text-accent transition-colors font-medium"
-                >
-                  <Heart className="h-5 w-5" />
-                  <span>Discover</span>
-                </Link>
-                <Link 
                   to="/connections" 
                   className="flex items-center gap-2 text-white hover:text-accent transition-colors font-medium"
                 >
-                  <MessageCircle className="h-5 w-5" />
+                  <Heart className="h-5 w-5" />
                   <span>Connections</span>
                 </Link>
                 <Link 
-                  to="/profile-showcase" 
+                  to="/messages" 
                   className="flex items-center gap-2 text-white hover:text-accent transition-colors font-medium"
                 >
-                  <User className="h-5 w-5" />
-                  <span>Profile</span>
+                  <MessageCircle className="h-5 w-5" />
+                  <span>Messages</span>
                 </Link>
                 <Link 
-                  to="/dashboard" 
+                  to="/analytics" 
                   className="flex items-center gap-2 text-white hover:text-accent transition-colors font-medium"
                 >
                   <BarChart3 className="h-5 w-5" />
-                  <span>Dashboard</span>
+                  <span>Analytics</span>
                 </Link>
               </>
             ) : (
@@ -87,18 +80,18 @@ const Header = () => {
           </nav>
           
           {/* Auth Buttons / User Menu */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {isAuthenticated ? (
               // Logged in - show settings button and logout
               <>
                 <Button 
                   variant="ghost" 
-                  className="text-white hover:text-accent hover:bg-white/10"
+                  className="text-white hover:text-accent hover:bg-white/10 text-xs sm:text-sm min-h-[44px] px-2 sm:px-4"
                   asChild
                 >
-                  <Link to="/dashboard" className="flex items-center gap-2">
-                    <Settings className="h-5 w-5" />
-                    <span>Settings</span>
+                  <Link to="/dashboard" className="flex items-center gap-1 sm:gap-2">
+                    <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="hidden sm:inline">Settings</span>
                   </Link>
                 </Button>
                 <Button 
@@ -107,7 +100,7 @@ const Header = () => {
                     window.location.href = "/";
                   }}
                   variant="outline" 
-                  className="bg-white/10 text-white border-white/20 hover:bg-white/20 rounded-full font-semibold px-5"
+                  className="bg-white/10 text-white border-white/20 hover:bg-white/20 rounded-full font-semibold text-xs sm:text-sm min-h-[44px] px-3 sm:px-5"
                 >
                   Logout
                 </Button>
@@ -115,10 +108,10 @@ const Header = () => {
             ) : (
               // Logged out - show login and signup
               <>
-                <Button variant="ghost" className="text-white hover:text-accent hover:bg-white/10" asChild>
+                <Button variant="ghost" className="text-white hover:text-accent hover:bg-white/10 text-xs sm:text-sm min-h-[44px] px-2 sm:px-4" asChild>
                   <Link to="/login">Login</Link>
                 </Button>
-                <Button className="bg-white text-primary hover:bg-white/90 rounded-full font-semibold px-5" size="default" asChild>
+                <Button className="bg-white text-primary hover:bg-white/90 rounded-full font-semibold text-xs sm:text-sm min-h-[44px] px-3 sm:px-5" size="default" asChild>
                   <Link to="/signup">Sign Up</Link>
                 </Button>
               </>

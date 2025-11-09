@@ -108,38 +108,56 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
   };
 
   const subscribeToMessages = () => {
-    const channel = supabase
-      .channel(`messages:${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          const newMsg = payload.new as any;
-          setMessages((prev) => {
-            // Prevent duplicates
-            if (prev.some(m => m.id === newMsg.id)) return prev;
-            return [...prev, newMsg as Message];
-          });
-          setIsTyping(false);
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    
+    const setupSubscription = () => {
+      const channel = supabase
+        .channel(`messages:${conversationId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
+            filter: `conversation_id=eq.${conversationId}`,
+          },
+          (payload) => {
+            const newMsg = payload.new as any;
+            setMessages((prev) => {
+              // Prevent duplicates
+              if (prev.some(m => m.id === newMsg.id)) return prev;
+              return [...prev, newMsg as Message];
+            });
+            setIsTyping(false);
 
-          // Mark as read if it's not from current user
-          if (newMsg.receiver_id === currentUserId) {
-            supabase
-              .from("messages")
-              .update({ read: true })
-              .eq("id", newMsg.id)
-              .then(() => {
-                console.log("Message marked as read");
-              });
+            // Mark as read if it's not from current user
+            if (newMsg.receiver_id === currentUserId) {
+              supabase
+                .from("messages")
+                .update({ read: true })
+                .eq("id", newMsg.id)
+                .then(() => {
+                  console.log("Message marked as read");
+                });
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe((status) => {
+          if (status === 'CHANNEL_ERROR' && reconnectAttempts < maxReconnectAttempts) {
+            reconnectAttempts++;
+            console.log(`Reconnecting messages channel (attempt ${reconnectAttempts})...`);
+            setTimeout(() => setupSubscription(), 2000 * reconnectAttempts);
+          } else if (status === 'SUBSCRIBED') {
+            reconnectAttempts = 0;
+            console.log('Messages channel connected');
+          }
+        });
+
+      return channel;
+    };
+
+    const channel = setupSubscription();
 
     return () => {
       supabase.removeChannel(channel);
@@ -147,25 +165,43 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
   };
 
   const subscribeToTyping = () => {
-    const channel = supabase
-      .channel(`typing:${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "typing_status",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          const typingData = payload.new as any;
-          // Only show typing indicator if it's the other user
-          if (typingData.user_id !== currentUserId) {
-            setIsTyping(typingData.is_typing);
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    
+    const setupSubscription = () => {
+      const channel = supabase
+        .channel(`typing:${conversationId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "typing_status",
+            filter: `conversation_id=eq.${conversationId}`,
+          },
+          (payload) => {
+            const typingData = payload.new as any;
+            // Only show typing indicator if it's the other user
+            if (typingData.user_id !== currentUserId) {
+              setIsTyping(typingData.is_typing);
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe((status) => {
+          if (status === 'CHANNEL_ERROR' && reconnectAttempts < maxReconnectAttempts) {
+            reconnectAttempts++;
+            console.log(`Reconnecting typing channel (attempt ${reconnectAttempts})...`);
+            setTimeout(() => setupSubscription(), 2000 * reconnectAttempts);
+          } else if (status === 'SUBSCRIBED') {
+            reconnectAttempts = 0;
+            console.log('Typing channel connected');
+          }
+        });
+
+      return channel;
+    };
+
+    const channel = setupSubscription();
 
     return () => {
       supabase.removeChannel(channel);

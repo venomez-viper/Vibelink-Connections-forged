@@ -215,11 +215,15 @@ const Connections = () => {
   };
 
   const handleOpenChat = (matchedUserId: string, name: string, avatar: string | null) => {
-    // This will be handled by GlobalChat component
-    toast({
-      title: "Opening chat",
-      description: `Starting conversation with ${name}`,
-    });
+    // Call GlobalChat's open function
+    if ((window as any).openChatFromConnections) {
+      (window as any).openChatFromConnections(matchedUserId, name, avatar || undefined);
+    } else {
+      toast({
+        title: "Opening chat",
+        description: `Starting conversation with ${name}`,
+      });
+    }
   };
 
   if (loading) {

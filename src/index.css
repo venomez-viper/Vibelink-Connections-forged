@@ -140,4 +140,16 @@ All colors MUST be HSL.
   .hover-glow:hover {
     filter: drop-shadow(0 0 8px rgba(255, 77, 109, 0.6));
   }
+
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+
+  /* Optimize for mobile touch targets */
+  @media (max-width: 768px) {
+    button, a[role="button"], [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
 }

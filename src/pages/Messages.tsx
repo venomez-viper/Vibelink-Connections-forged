@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import FloatingChatButton from "./FloatingChatButton";
-import ChatWindow from "./ChatWindow";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { MessageCircle } from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import ChatWindow from "@/components/ChatWindow";
 
 interface Conversation {
   id: string;
@@ -12,10 +18,12 @@ interface Conversation {
   userId: string;
 }
 
-const GlobalChat = () => {
+const Messages = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeChatUser, setActiveChatUser] = useState<{ id: string; name: string; avatar?: string } | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkAuthAndLoadConversations();
@@ -25,12 +33,13 @@ const GlobalChat = () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
-      setConversations([]);
+      navigate('/login');
       return;
     }
 
     setCurrentUserId(session.user.id);
     await loadConversations(session.user.id);
+    setLoading(false);
   };
 
   const loadConversations = async (userId: string) => {
@@ -82,15 +91,12 @@ const GlobalChat = () => {
       }
     }
 
-    console.log("Loaded conversations:", convos);
     setConversations(convos);
   };
 
   const getOrCreateConversation = async (user1Id: string, user2Id: string): Promise<string | null> => {
     // Sort IDs to ensure consistent ordering
     const [userId1, userId2] = [user1Id, user2Id].sort();
-    
-    console.log("Getting or creating conversation for:", userId1, "and", userId2);
 
     // Check if conversation exists
     const { data: existing, error: fetchError } = await supabase
@@ -105,12 +111,10 @@ const GlobalChat = () => {
     }
 
     if (existing) {
-      console.log("Found existing conversation:", existing.id);
       return existing.id;
     }
 
     // Create new conversation
-    console.log("Creating new conversation...");
     const { data: newConv, error } = await supabase
       .from('conversations')
       .insert({
@@ -125,7 +129,6 @@ const GlobalChat = () => {
       return null;
     }
 
-    console.log("Created new conversation:", newConv?.id);
     return newConv?.id || null;
   };
 
@@ -137,34 +140,89 @@ const GlobalChat = () => {
     });
   };
 
-  // Expose function globally for Connections page
-  useEffect(() => {
-    (window as any).openChatFromConnections = (userId: string, name: string, avatar?: string) => {
-      setActiveChatUser({ id: userId, name, avatar });
-    };
-    return () => {
-      delete (window as any).openChatFromConnections;
-    };
-  }, []);
-
   const handleCloseChat = () => {
     setActiveChatUser(null);
   };
 
-  // Don't show on login/signup pages
-  const shouldShowChat = currentUserId && 
-    !window.location.pathname.includes('/login') && 
-    !window.location.pathname.includes('/signup');
-
-  if (!shouldShowChat) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-romantic-50 via-white to-romantic-100">
+        <Header />
+        <div className="container mx-auto px-4 py-24 flex items-center justify-center">
+          <p className="text-muted-foreground">Loading messages...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <FloatingChatButton 
-        conversations={conversations} 
-        onOpenChat={handleOpenChat}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-romantic-50 via-white to-romantic-100">
+      <Header />
       
+      <main className="container mx-auto px-4 py-24">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-freestyle text-gradient-brand mb-4">
+              Messages
+            </h1>
+            <p className="text-muted-foreground">
+              Continue your conversations
+            </p>
+          </div>
+
+          {conversations.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <MessageCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-xl font-semibold mb-2">No Conversations Yet</h3>
+                <p className="text-muted-foreground">
+                  Start matching with people to begin chatting!
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {conversations.map((conversation) => (
+                <Card 
+                  key={conversation.id} 
+                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => handleOpenChat(conversation)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-16 w-16">
+                        <AvatarImage src={conversation.avatar || undefined} />
+                        <AvatarFallback className="text-xl">
+                          {conversation.name[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="text-lg font-semibold">
+                            {conversation.name}
+                          </h3>
+                          {conversation.unreadCount > 0 && (
+                            <Badge variant="default" className="bg-primary">
+                              {conversation.unreadCount}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {conversation.lastMessage}
+                        </p>
+                      </div>
+
+                      <MessageCircle className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
       {activeChatUser && (
         <ChatWindow
           conversationId={conversations.find(c => c.userId === activeChatUser.id)?.id || ""}
@@ -173,8 +231,10 @@ const GlobalChat = () => {
           onClose={handleCloseChat}
         />
       )}
-    </>
+
+      <Footer />
+    </div>
   );
 };
 
-export default GlobalChat;
+export default Messages;

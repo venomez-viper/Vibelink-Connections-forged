@@ -18,6 +18,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NearbyMatches from "./pages/NearbyMatches";
 import Connections from "./pages/Connections";
+import Analytics from "./pages/Analytics";
+import Messages from "./pages/Messages";
 import Blog from "./pages/Blog";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -44,6 +46,8 @@ const App = () => (
           <Route path="/discover" element={<Discover />} />
           <Route path="/requests" element={<Requests />} />
           <Route path="/connections" element={<Connections />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/messages" element={<Messages />} />
           <Route path="/profile/:userId" element={<ProfileShowcase />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />

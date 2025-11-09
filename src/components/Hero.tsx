@@ -26,38 +26,38 @@ const Hero = () => {
               Connect with Nearby Singles 📍
             </Link>
             
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white">
-              Welcome to <span className="font-freestyle text-gradient-brand hover-glow">VibeLink</span>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white">
+              Welcome to <span className="font-freestyle text-white hover-glow">VibeLink</span>
             </h1>
             
-            <p className="text-lg md:text-xl text-white max-w-xl">
+            <p className="text-base sm:text-lg md:text-xl text-white/90 max-w-xl mx-auto md:mx-0">
               Meet like-minded singles nearby—safe, genuine, and designed for meaningful connections. 
               Find love, friendship, or your soulmate in a vibrant community.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4">
-              <Button size="xl" variant="hero" asChild className="animate-pulse hover:animate-none">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start pt-4">
+              <Button size="xl" variant="hero" asChild className="animate-pulse hover:animate-none min-h-[44px]">
                 <Link to="/signup">Sign Up Free</Link>
               </Button>
-              <Button size="xl" variant="outline" className="border-white text-white hover:bg-white hover:text-primary" asChild>
+              <Button size="xl" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-primary min-h-[44px]" asChild>
                 <Link to="/login">Login</Link>
               </Button>
             </div>
             
-            <div className="flex items-center justify-center md:justify-start gap-8 pt-8 text-sm text-white">
-              <div>
-                <div className="text-2xl font-bold text-white">100K+</div>
-                <div className="text-white/80">Active Users</div>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 sm:gap-8 pt-8 text-sm text-white">
+              <div className="text-center">
+                <div className="text-xl sm:text-2xl font-bold text-white">100K+</div>
+                <div className="text-white/80 text-xs sm:text-sm">Active Users</div>
               </div>
-              <div className="w-px h-12 bg-white/20" />
-              <div>
-                <div className="text-2xl font-bold text-white">50K+</div>
-                <div className="text-white/80">Matches Made</div>
+              <div className="w-px h-10 sm:h-12 bg-white/20" />
+              <div className="text-center">
+                <div className="text-xl sm:text-2xl font-bold text-white">50K+</div>
+                <div className="text-white/80 text-xs sm:text-sm">Matches Made</div>
               </div>
-              <div className="w-px h-12 bg-white/20" />
-              <div>
-                <div className="text-2xl font-bold text-white">4.8★</div>
-                <div className="text-white/80">User Rating</div>
+              <div className="w-px h-10 sm:h-12 bg-white/20" />
+              <div className="text-center">
+                <div className="text-xl sm:text-2xl font-bold text-white">4.8★</div>
+                <div className="text-white/80 text-xs sm:text-sm">User Rating</div>
               </div>
             </div>
           </div>
@@ -69,6 +69,7 @@ const Hero = () => {
                 src={heroImage} 
                 alt="Happy couple connecting through VibeLink" 
                 className="w-full h-auto object-cover"
+                loading="eager"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/50 to-transparent" />
             </div>
