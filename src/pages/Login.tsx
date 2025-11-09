@@ -89,8 +89,8 @@ const Login = () => {
         <div className="container mx-auto max-w-md">
           <Card className="p-8 shadow-2xl border-none bg-card/80 backdrop-blur-sm">
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
-                Welcome Back to VibeLink
+              <h1 className="text-4xl font-bold mb-2">
+                Welcome Back to <span className="font-freestyle text-gradient-brand hover-glow">VibeLink</span>
               </h1>
               <p className="text-muted-foreground text-sm">
                 Your vibe finds its match.

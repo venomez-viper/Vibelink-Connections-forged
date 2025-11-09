@@ -186,8 +186,8 @@ const SignUp = () => {
         <div className="container mx-auto max-w-2xl">
           <Card className="p-8 shadow-2xl border-none bg-card/80 backdrop-blur-sm">
             <div className="text-center mb-6">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
-                Join VibeLink — Create Your Profile
+              <h1 className="text-3xl font-bold mb-2">
+                Join <span className="font-freestyle text-gradient-brand hover-glow">VibeLink</span> — Create Your Profile
               </h1>
               <p className="text-muted-foreground text-sm">Step {step} of 3</p>
             </div>

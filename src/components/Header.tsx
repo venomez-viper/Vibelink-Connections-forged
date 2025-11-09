@@ -11,9 +11,11 @@ const Header = () => {
       <div className="container mx-auto px-4 md:px-[60px] py-5">
         <div className="flex items-center justify-between rounded-md mx-[5px] my-0 px-[3px] py-0">
           {/* Logo */}
-          <Link to="/" className="flex items-center -space-x-3 hover:opacity-80 transition-opacity">
-            <img src={logo} alt="VibeLink Logo" className="w-24 h-24" />
-            <span className="font-freestyle text-white text-5xl leading-none -ml-1">VibeLink</span>
+          <Link to="/" className="flex items-center -space-x-3 group">
+            <img src={logo} alt="VibeLink Logo" className="w-24 h-24 transition-transform group-hover:scale-105" />
+            <span className="font-freestyle text-gradient-brand text-5xl leading-none -ml-1 hover-glow">
+              VibeLink
+            </span>
           </Link>
           
           {/* Desktop Navigation */}

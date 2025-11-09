@@ -11,12 +11,18 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Heart, MessageCircle, Settings, TrendingUp, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import ChatWindow from "@/components/ChatWindow";
+import PhotoUpload from "@/components/PhotoUpload";
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [interests, setInterests] = useState<any[]>([]);
+  const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMatches, setLoadingMatches] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [selectedChat, setSelectedChat] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -29,6 +35,7 @@ const Dashboard = () => {
       }
       setUser(session.user);
       loadProfile(session.user.id);
+      calculateMatches(session.user.id);
     });
 
     // Listen for auth changes
@@ -73,6 +80,40 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const calculateMatches = async (userId: string) => {
+    setLoadingMatches(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("calculate-compatibility", {
+        body: { userId },
+      });
+
+      if (error) throw error;
+      setMatches(data.matches || []);
+    } catch (error) {
+      console.error("Error calculating matches:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load matches",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingMatches(false);
+    }
+  };
+
+  const openChat = (match: any) => {
+    const conversationId = [user.id, match.matched_user_id].sort().join("-");
+    setSelectedChat({
+      conversationId,
+      otherUser: {
+        id: match.matched_user_id,
+        name: match.profile.first_name,
+        avatar: match.profile.profile_photo_url,
+      },
+    });
+    setChatOpen(true);
   };
 
   const handleSignOut = async () => {
@@ -162,42 +203,84 @@ const Dashboard = () => {
             <TabsContent value="matches">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Heart className="h-5 w-5 text-primary" />
-                    Your Matches
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Heart className="h-5 w-5 text-primary" />
+                      Your Matches
+                    </div>
+                    <Button 
+                      onClick={() => calculateMatches(user.id)}
+                      disabled={loadingMatches}
+                      variant="outline"
+                      size="sm"
+                    >
+                      {loadingMatches ? "Loading..." : "Refresh Matches"}
+                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[1, 2, 3].map((i) => (
-                      <Card key={i} className="hover:shadow-lg transition-shadow cursor-pointer">
-                        <CardContent className="pt-6 text-center">
-                          <Avatar className="h-20 w-20 mx-auto mb-3">
-                            <AvatarFallback className="bg-gradient-to-r from-primary to-secondary text-white text-xl">
-                              M{i}
-                            </AvatarFallback>
-                          </Avatar>
-                          <h3 className="font-semibold text-lg mb-1">Match {i}</h3>
-                          <div className="flex items-center justify-center gap-2 mb-2">
-                            <Badge variant="secondary" className="bg-primary/20">
-                              {85 + i}% Compatible
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-3">
-                            Shared interests: Music, Travel
-                          </p>
-                          <Button size="sm" className="w-full bg-gradient-to-r from-primary to-secondary">
-                            View Profile
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                  <div className="text-center mt-6">
-                    <p className="text-muted-foreground text-sm">
-                      More matches coming soon! Keep your profile updated.
-                    </p>
-                  </div>
+                  {loadingMatches ? (
+                    <div className="flex justify-center py-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                    </div>
+                  ) : matches.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {matches.map((match) => (
+                        <Card key={match.matched_user_id} className="hover:shadow-lg transition-shadow">
+                          <CardContent className="pt-6 text-center">
+                            <Avatar className="h-20 w-20 mx-auto mb-3 ring-2 ring-primary/20">
+                              <AvatarImage src={match.profile.profile_photo_url} />
+                              <AvatarFallback className="bg-gradient-to-r from-primary to-secondary text-white text-xl">
+                                {match.profile.first_name[0]}
+                              </AvatarFallback>
+                            </Avatar>
+                            <h3 className="font-semibold text-lg mb-1">{match.profile.first_name}, {match.profile.age}</h3>
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <Badge variant="secondary" className="bg-primary/20">
+                                {match.compatibility_score}% Compatible
+                              </Badge>
+                            </div>
+                            {match.profile.location && (
+                              <p className="text-sm text-muted-foreground mb-2 flex items-center justify-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {match.profile.location}
+                              </p>
+                            )}
+                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                              {match.profile.tagline || match.profile.bio || "No bio yet"}
+                            </p>
+                            {match.profile.interests?.length > 0 && (
+                              <div className="flex flex-wrap gap-1 justify-center mb-3">
+                                {match.profile.interests.slice(0, 3).map((interest: string, i: number) => (
+                                  <Badge key={i} variant="outline" className="text-xs">
+                                    {interest}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                            <Button 
+                              size="sm" 
+                              className="w-full bg-gradient-to-r from-primary to-secondary"
+                              onClick={() => openChat(match)}
+                            >
+                              Send Message
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Heart className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold mb-2">No matches yet</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Complete your profile and add interests to find compatible matches!
+                      </p>
+                      <Button onClick={() => calculateMatches(user.id)}>
+                        Find Matches
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -231,7 +314,14 @@ const Dashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-6">
+                    <div className="flex justify-center mb-6">
+                      <PhotoUpload
+                        currentPhotoUrl={profile?.profile_photo_url}
+                        userId={user.id}
+                        onUploadComplete={(url) => setProfile({ ...profile, profile_photo_url: url })}
+                      />
+                    </div>
                     <div>
                       <h3 className="text-sm font-medium mb-2">Profile Information</h3>
                       <div className="grid gap-3">
@@ -316,6 +406,15 @@ const Dashboard = () => {
           </Tabs>
         </div>
       </div>
+
+      {chatOpen && selectedChat && (
+        <ChatWindow
+          conversationId={selectedChat.conversationId}
+          otherUser={selectedChat.otherUser}
+          currentUserId={user.id}
+          onClose={() => setChatOpen(false)}
+        />
+      )}
 
       <Footer />
     </div>

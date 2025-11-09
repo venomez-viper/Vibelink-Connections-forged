@@ -27,7 +27,7 @@ const Hero = () => {
             </Link>
             
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white">
-              Welcome to <span className="text-white">VibeLink</span>
+              Welcome to <span className="font-freestyle text-gradient-brand hover-glow">VibeLink</span>
             </h1>
             
             <p className="text-lg md:text-xl text-white max-w-xl">
