@@ -42,11 +42,12 @@ const Header = () => {
       </div>
       {/* Wavy Bottom Border - Only show on non-homepage */}
       {!isHomepage && (
-        <div className="absolute -bottom-[1px] left-0 w-full overflow-hidden leading-[0]">
-          <svg className="block w-full h-[60px]" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <div className="absolute -bottom-[1px] left-0 w-full overflow-hidden leading-[0] border-none outline-none shadow-none">
+          <svg className="block w-full h-[60px] border-none outline-none shadow-none" viewBox="0 0 1440 320" preserveAspectRatio="none">
             <path 
               fill="hsl(var(--background))" 
               fillOpacity="1"
+              stroke="none"
               d="M0,128L80,144C160,160,320,192,480,181.3C640,171,800,117,960,101.3C1120,85,1280,107,1360,117.3L1440,128L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z"
             />
           </svg>
