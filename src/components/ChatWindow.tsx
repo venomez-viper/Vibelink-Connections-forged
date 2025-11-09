@@ -42,6 +42,7 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const { isRecording, recordingTime, startRecording, stopRecording, cancelRecording } = useVoiceRecording();
 
@@ -51,9 +52,12 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
 
   useEffect(() => {
     loadMessages();
-    const unsubscribe = subscribeToMessages();
+    const unsubscribeMessages = subscribeToMessages();
+    const unsubscribeTyping = subscribeToTyping();
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (unsubscribeMessages) unsubscribeMessages();
+      if (unsubscribeTyping) unsubscribeTyping();
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
   }, [conversationId]);
 
@@ -131,6 +135,60 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
     return () => {
       supabase.removeChannel(channel);
     };
+  };
+
+  const subscribeToTyping = () => {
+    const channel = supabase
+      .channel(`typing:${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "typing_status",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const typingData = payload.new as any;
+          // Only show typing indicator if it's the other user
+          if (typingData.user_id !== currentUserId) {
+            setIsTyping(typingData.is_typing);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const updateTypingStatus = async (isTyping: boolean) => {
+    await supabase
+      .from("typing_status")
+      .upsert({
+        conversation_id: conversationId,
+        user_id: currentUserId,
+        is_typing: isTyping,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'conversation_id,user_id'
+      });
+  };
+
+  const handleTyping = () => {
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set typing to true
+    updateTypingStatus(true);
+
+    // Set timeout to stop typing after 2 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      updateTypingStatus(false);
+    }, 2000);
   };
 
   const uploadFile = async (file: Blob, folder: 'images' | 'voice'): Promise<string | null> => {
@@ -256,10 +314,14 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
   };
 
   return (
-    <Card className="fixed bottom-4 right-4 w-96 h-[600px] shadow-2xl z-50 flex flex-col">
+    <Card className="fixed bottom-4 right-4 w-96 h-[600px] shadow-2xl z-50 flex flex-col animate-in slide-in-from-bottom-4 duration-300">
       {/* VibeLink watermark */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5 z-0">
-        <span className="text-6xl font-freestyle text-gradient-brand">VibeLink</span>
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.07] z-0 select-none">
+        <div className="transform -rotate-45">
+          <span className="text-8xl font-freestyle bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            VibeLink
+          </span>
+        </div>
       </div>
 
       <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-primary to-secondary text-white rounded-t-lg p-4 relative z-10">
@@ -290,10 +352,10 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
           return (
             <div
               key={message.id}
-              className={`flex ${isSender ? "justify-end" : "justify-start"}`}
+              className={`flex ${isSender ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
             >
               <div
-                className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                className={`max-w-[70%] rounded-2xl px-4 py-2 transition-all ${
                   isSender
                     ? "bg-gradient-to-r from-primary to-secondary text-white"
                     : "bg-muted text-foreground"
@@ -389,7 +451,10 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
           </Popover>
           <Input
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => {
+              setNewMessage(e.target.value);
+              handleTyping();
+            }}
             onKeyPress={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();

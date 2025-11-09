@@ -61,22 +61,62 @@ const GlobalChat = () => {
       .select('user_id, first_name, profile_photo_url')
       .in('user_id', matchedUserIds);
 
-    // Transform matches into conversations
-    const convos: Conversation[] = matches?.map((match: any) => {
+    // Get or create conversations for each match
+    const convos: Conversation[] = [];
+    
+    for (const match of matches || []) {
       const profile = profiles?.find(p => p.user_id === match.matched_user_id);
       
-      return {
-        id: match.id, // This is the match UUID - used as conversation_id
-        userId: match.matched_user_id,
-        name: profile?.first_name || "Unknown User",
-        avatar: profile?.profile_photo_url,
-        lastMessage: "Start chatting...",
-        unreadCount: 0
-      };
-    }) || [];
+      // Ensure conversation exists (create if not)
+      const conversationId = await getOrCreateConversation(userId, match.matched_user_id);
+      
+      if (conversationId) {
+        convos.push({
+          id: conversationId,
+          userId: match.matched_user_id,
+          name: profile?.first_name || "Unknown User",
+          avatar: profile?.profile_photo_url,
+          lastMessage: "Start chatting...",
+          unreadCount: 0
+        });
+      }
+    }
 
     console.log("Loaded conversations:", convos);
     setConversations(convos);
+  };
+
+  const getOrCreateConversation = async (user1Id: string, user2Id: string): Promise<string | null> => {
+    // Sort IDs to ensure consistent ordering
+    const [userId1, userId2] = [user1Id, user2Id].sort();
+
+    // Check if conversation exists
+    const { data: existing } = await supabase
+      .from('conversations')
+      .select('id')
+      .or(`and(user1_id.eq.${userId1},user2_id.eq.${userId2}),and(user1_id.eq.${userId2},user2_id.eq.${userId1})`)
+      .maybeSingle();
+
+    if (existing) {
+      return existing.id;
+    }
+
+    // Create new conversation
+    const { data: newConv, error } = await supabase
+      .from('conversations')
+      .insert({
+        user1_id: userId1,
+        user2_id: userId2
+      })
+      .select('id')
+      .single();
+
+    if (error) {
+      console.error("Error creating conversation:", error);
+      return null;
+    }
+
+    return newConv?.id || null;
   };
 
   const handleOpenChat = (conversation: Conversation) => {
