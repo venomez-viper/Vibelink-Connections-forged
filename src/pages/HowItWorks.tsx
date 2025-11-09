@@ -35,13 +35,13 @@ const HowItWorks = () => {
     <div className="min-h-screen">
       <Header />
       
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 bg-gradient-to-br from-primary via-primary-dark to-primary">
+      {/* Page Title Section */}
+      <section className="pt-40 pb-12 px-4 bg-background">
         <div className="container mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
             How VibeLink Works
           </h1>
-          <p className="text-xl text-white/90 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Four simple steps to finding meaningful connections nearby
           </p>
         </div>
