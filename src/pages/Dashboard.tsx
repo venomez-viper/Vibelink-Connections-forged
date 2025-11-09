@@ -104,17 +104,56 @@ const Dashboard = () => {
     }
   };
 
-  const openChat = (match: any) => {
-    const conversationId = [user.id, match.matched_user_id].sort().join("-");
-    setSelectedChat({
-      conversationId,
-      otherUser: {
-        id: match.matched_user_id,
-        name: match.profile.first_name,
-        avatar: match.profile.profile_photo_url,
-      },
-    });
-    setChatOpen(true);
+  const openChat = async (match: any) => {
+    try {
+      const [userId1, userId2] = [user.id, match.matched_user_id].sort();
+      console.log("Opening chat. Resolving conversation for:", userId1, userId2);
+
+      // Find existing conversation between these two users
+      const { data: existing, error: fetchError } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`and(user1_id.eq.${userId1},user2_id.eq.${userId2}),and(user1_id.eq.${userId2},user2_id.eq.${userId1})`)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error('Error fetching conversation:', fetchError);
+        toast({ title: 'Error', description: 'Could not open chat.', variant: 'destructive' });
+        return;
+      }
+
+      let conversationId = existing?.id as string | undefined;
+
+      // Create conversation if it doesn't exist yet
+      if (!conversationId) {
+        const { data: newConv, error: createError } = await supabase
+          .from('conversations')
+          .insert({ user1_id: userId1, user2_id: userId2 })
+          .select('id')
+          .single();
+
+        if (createError) {
+          console.error('Error creating conversation:', createError);
+          toast({ title: 'Error', description: 'Could not start a new conversation.', variant: 'destructive' });
+          return;
+        }
+
+        conversationId = newConv?.id;
+      }
+
+      setSelectedChat({
+        conversationId,
+        otherUser: {
+          id: match.matched_user_id,
+          name: match.profile.first_name,
+          avatar: match.profile.profile_photo_url,
+        },
+      });
+      setChatOpen(true);
+    } catch (e) {
+      console.error('Unexpected error opening chat:', e);
+      toast({ title: 'Error', description: 'Something went wrong opening the chat.', variant: 'destructive' });
+    }
   };
 
   const handleSignOut = async () => {
