@@ -5,9 +5,9 @@ const Header = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between rounded-md mx-[3px] my-0 px-[3px] py-[2px]">
           {/* Logo */}
-          <div className="flex items-center gap-1">
-            <img src={logo} alt="VibeLink Logo" className="w-20 h-20" />
-            <span className="font-freestyle text-white px-0 mx-0 my-0 text-5xl text-left">VibeLink</span>
+          <div className="flex items-center gap-0 -space-x-1">
+            <img src={logo} alt="VibeLink Logo" className="w-16 h-16 -mr-2" />
+            <span className="font-freestyle text-white text-5xl leading-none">VibeLink</span>
           </div>
           
           {/* Desktop Navigation */}
