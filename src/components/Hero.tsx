@@ -26,7 +26,7 @@ const Hero = () => {
             </Link>
             
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white">
-              Welcome to <span className="font-freestyle text-white hover-glow">VibeLink</span>
+              Welcome to VibeLink
             </h1>
             
             <p className="text-base sm:text-lg md:text-xl text-white/90 max-w-xl mx-auto md:mx-0">
@@ -35,10 +35,10 @@ const Hero = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start pt-4">
-              <Button size="xl" variant="hero" asChild className="animate-pulse hover:animate-none min-h-[44px]">
+              <Button size="lg" asChild className="bg-white text-primary hover:bg-white/90 rounded-full font-semibold min-h-[44px] px-8">
                 <Link to="/signup">Sign Up Free</Link>
               </Button>
-              <Button size="xl" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-primary min-h-[44px]" asChild>
+              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-primary rounded-full min-h-[44px] px-8" asChild>
                 <Link to="/login">Login</Link>
               </Button>
             </div>

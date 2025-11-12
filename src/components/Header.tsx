@@ -40,27 +40,27 @@ const Header = () => {
           </Link>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-8">
             {isAuthenticated ? (
               // Logged in navigation
               <>
                 <Link 
                   to="/connections" 
-                  className="flex items-center gap-2 text-white hover:text-accent transition-colors font-medium"
+                  className="flex items-center gap-2 text-white hover:text-white/80 transition-colors font-medium"
                 >
                   <Heart className="h-5 w-5" />
                   <span>Connections</span>
                 </Link>
                 <Link 
                   to="/messages" 
-                  className="flex items-center gap-2 text-white hover:text-accent transition-colors font-medium"
+                  className="flex items-center gap-2 text-white hover:text-white/80 transition-colors font-medium"
                 >
                   <MessageCircle className="h-5 w-5" />
                   <span>Messages</span>
                 </Link>
                 <Link 
                   to="/analytics" 
-                  className="flex items-center gap-2 text-white hover:text-accent transition-colors font-medium"
+                  className="flex items-center gap-2 text-white hover:text-white/80 transition-colors font-medium"
                 >
                   <BarChart3 className="h-5 w-5" />
                   <span>Analytics</span>
@@ -69,13 +69,13 @@ const Header = () => {
             ) : (
               // Logged out navigation
               <>
-                <Link to="/how-it-works" className="text-white hover:text-accent transition-colors font-medium">
+                <Link to="/how-it-works" className="text-white hover:text-white/80 transition-colors font-medium text-base">
                   How It Works
                 </Link>
-                <Link to="/safety" className="text-white hover:text-accent transition-colors font-medium">
+                <Link to="/safety" className="text-white hover:text-white/80 transition-colors font-medium text-base">
                   Safety
                 </Link>
-                <Link to="/about" className="text-white hover:text-accent transition-colors font-medium">
+                <Link to="/about" className="text-white hover:text-white/80 transition-colors font-medium text-base">
                   About
                 </Link>
               </>
