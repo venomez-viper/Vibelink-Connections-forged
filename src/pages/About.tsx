@@ -35,7 +35,7 @@ const About = () => {
       <section className="pt-40 pb-12 px-4 bg-background">
         <div className="container mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
-            About VibeLink
+            About <span className="font-freestyle">VibeLink</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Bringing people together through meaningful connections
@@ -55,13 +55,16 @@ const About = () => {
           <Card className="p-8 md:p-12">
             <div className="prose prose-lg max-w-none">
               <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-                VibeLink was born from a simple belief: everyone deserves to find meaningful connections in today's fast-paced digital world. Founded in 2024, we set out to create a dating platform that prioritizes authenticity, safety, and real relationships over superficial swipes.
+                <span className="font-freestyle">VibeLink</span> began as a creative extension of a DePaul University classroom project developed by four students in 2025. What started as a simple academic idea evolved into a fun, hands-on experiment — turning their imaginary company concept, <span className="font-freestyle">VibeLink</span>, into a real, interactive web experience.
               </p>
               <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-                Our team of passionate developers, relationship experts, and designers came together to build something different—a platform where technology enhances human connection rather than replacing it. We use cutting-edge AI to match people based on compatibility, not just looks.
+                The goal wasn't to build an actual dating platform, but to explore how design, analytics, and AI could come together to make something engaging, playful, and full of heart.
+              </p>
+              <p className="text-muted-foreground text-lg leading-relaxed mb-6">
+                With the help of modern AI tools, the team decided to bring their idea to life — transforming a school assignment into a living, breathing demo project that shows what's possible when creativity meets technology.
               </p>
               <p className="text-muted-foreground text-lg leading-relaxed">
-                Today, VibeLink has helped thousands of singles find love, friendship, and companionship. But we're just getting started. Our mission is to create a world where finding meaningful connections is accessible, safe, and enjoyable for everyone.
+                Today, <span className="font-freestyle">VibeLink</span> stands as a fun student-made showcase — not a real company, but a joyful experiment that celebrates innovation, learning, and collaboration.
               </p>
             </div>
           </Card>
@@ -111,11 +114,11 @@ const About = () => {
             Meet Our Team
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            A diverse group of passionate individuals dedicated to helping you find love
+            Four DePaul University students who turned a classroom project into something special
           </p>
           <Card className="p-8">
-            <p className="text-muted-foreground">
-              Our team includes relationship psychologists, software engineers, UX designers, and customer support specialists—all working together to create the best dating experience possible. We're headquartered in San Francisco with team members around the globe.
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              <span className="font-freestyle">VibeLink</span> was created by four DePaul University students who wanted to extend their original class project into something more interactive and fun. Our small team of developers, designers, and analytics enthusiasts worked together to imagine what the <span className="font-freestyle">VibeLink</span> app might look like if it were real — using AI to help design, build, and refine every part of the experience. While the project began as coursework in Chicago, it quickly became a passion project — a playful blend of imagination, creativity, and teamwork designed to showcase the spirit of innovation that DePaul inspires.
             </p>
           </Card>
         </div>
