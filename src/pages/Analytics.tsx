@@ -14,6 +14,7 @@ interface AnalyticsData {
   totalMatches: number;
   activeChats: number;
   pendingRequests: number;
+  lastUpdated?: Date;
 }
 
 const Analytics = () => {
@@ -24,6 +25,7 @@ const Analytics = () => {
     totalMatches: 0,
     activeChats: 0,
     pendingRequests: 0,
+    lastUpdated: new Date(),
   });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -136,6 +138,7 @@ const Analytics = () => {
       totalMatches: matches?.length || 0,
       activeChats: conversations?.length || 0,
       pendingRequests: pendingRequests?.length || 0,
+      lastUpdated: new Date(),
     });
   };
 
@@ -154,7 +157,7 @@ const Analytics = () => {
     <div className="min-h-screen bg-gradient-to-br from-romantic-50 via-white to-romantic-100">
       <Header />
       
-      <main className="container mx-auto px-4 pt-8 pb-24">
+      <main className="container mx-auto px-4 pt-12 pb-24" style={{ marginTop: '0' }}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-freestyle text-gradient-brand mb-4">
@@ -291,8 +294,12 @@ const Analytics = () => {
             </Card>
           </div>
 
-          <div className="mt-8 p-4 bg-muted/50 rounded-lg text-center text-sm text-muted-foreground">
-            <p>📊 Analytics update automatically every 10 seconds</p>
+          <div className="mt-8 p-4 bg-muted/50 rounded-lg text-center text-sm text-muted-foreground space-y-1">
+            <p className="font-medium">📊 Real-Time Analytics</p>
+            <p className="text-xs">
+              Last updated: {analytics.lastUpdated ? new Date(analytics.lastUpdated).toLocaleTimeString() : 'Never'} • 
+              Auto-refreshes every 10 seconds
+            </p>
           </div>
         </div>
       </main>
