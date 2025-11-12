@@ -25,20 +25,30 @@ const Hero = () => {
               Connect with Nearby Singles 📍
             </Link>
             
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white">
-              Welcome to VibeLink
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-tight text-white">
+              Welcome to <span className="font-freestyle italic text-white">VibeLink</span>
             </h1>
             
-            <p className="text-base sm:text-lg md:text-xl text-white/90 max-w-xl mx-auto md:mx-0">
+            <p className="text-base sm:text-lg md:text-xl max-w-xl mx-auto md:mx-0" style={{ color: '#FFECEC' }}>
               Meet like-minded singles nearby—safe, genuine, and designed for meaningful connections. 
               Find love, friendship, or your soulmate in a vibrant community.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start pt-4">
-              <Button size="lg" asChild className="bg-white text-primary hover:bg-white/90 rounded-full font-semibold min-h-[44px] px-8">
+              <Button 
+                size="lg" 
+                asChild 
+                className="bg-white hover:bg-white/90 rounded-full font-semibold min-h-[44px] px-8"
+                style={{ color: '#FF4D6D' }}
+              >
                 <Link to="/signup">Sign Up Free</Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-primary rounded-full min-h-[44px] px-8" asChild>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-2 border-white text-white hover:bg-white/10 rounded-full min-h-[44px] px-8 bg-transparent" 
+                asChild
+              >
                 <Link to="/login">Login</Link>
               </Button>
             </div>
@@ -76,10 +86,20 @@ const Hero = () => {
         </div>
       </div>
       
-      {/* Wave decoration at bottom - connecting to next section */}
+      {/* Wave decoration at bottom - smooth wave transition */}
       <div className="absolute bottom-0 left-0 right-0 leading-[0] border-none outline-none -mb-px">
-        <svg viewBox="0 0 1440 120" xmlns="http://www.w3.org/2000/svg" className="w-full block border-none outline-none h-[60px] md:h-[100px]" preserveAspectRatio="none">
-          <path d="M0,96L48,106.7C96,117,192,139,288,138.7C384,139,480,117,576,101.3C672,85,768,75,864,85.3C960,96,1056,128,1152,133.3C1248,139,1344,117,1392,106.7L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" fill="hsl(var(--background))" stroke="none" strokeWidth="0"/>
+        <svg 
+          viewBox="0 0 1440 320" 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="w-full block border-none outline-none h-[80px] md:h-[120px]" 
+          preserveAspectRatio="none"
+        >
+          <path 
+            d="M0,160L48,144C96,128,192,96,288,90.7C384,85,480,107,576,128C672,149,768,171,864,165.3C960,160,1056,128,1152,117.3C1248,107,1344,117,1392,122.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" 
+            fill="hsl(var(--background))" 
+            stroke="none" 
+            strokeWidth="0"
+          />
         </svg>
       </div>
     </section>
