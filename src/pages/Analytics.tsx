@@ -154,7 +154,7 @@ const Analytics = () => {
     <div className="min-h-screen bg-gradient-to-br from-romantic-50 via-white to-romantic-100">
       <Header />
       
-      <main className="container mx-auto px-4 py-24">
+      <main className="container mx-auto px-4 pt-8 pb-24">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-freestyle text-gradient-brand mb-4">
@@ -175,12 +175,20 @@ const Analytics = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Success Rate</span>
-                    <span className="font-semibold">{analytics.matchSuccessRate}%</span>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Success Rate</span>
+                    <span className="font-bold text-lg text-primary">{analytics.matchSuccessRate}%</span>
                   </div>
-                  <Progress value={analytics.matchSuccessRate} className="h-2" />
+                  <div className="relative h-3 w-full overflow-hidden rounded-full bg-secondary/20">
+                    <div 
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ 
+                        width: `${analytics.matchSuccessRate}%`,
+                        background: 'linear-gradient(90deg, #FF4D6D, #5A189A)'
+                      }}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -193,12 +201,20 @@ const Analytics = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Response Rate</span>
-                    <span className="font-semibold">{analytics.responseRate}%</span>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Response Rate</span>
+                    <span className="font-bold text-lg text-primary">{analytics.responseRate}%</span>
                   </div>
-                  <Progress value={analytics.responseRate} className="h-2" />
+                  <div className="relative h-3 w-full overflow-hidden rounded-full bg-secondary/20">
+                    <div 
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ 
+                        width: `${analytics.responseRate}%`,
+                        background: 'linear-gradient(90deg, #FF4D6D, #5A189A)'
+                      }}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -211,12 +227,20 @@ const Analytics = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Completeness</span>
-                    <span className="font-semibold">{analytics.profileCompleteness}%</span>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Completeness</span>
+                    <span className="font-bold text-lg text-primary">{analytics.profileCompleteness}%</span>
                   </div>
-                  <Progress value={analytics.profileCompleteness} className="h-2" />
+                  <div className="relative h-3 w-full overflow-hidden rounded-full bg-secondary/20">
+                    <div 
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ 
+                        width: `${analytics.profileCompleteness}%`,
+                        background: 'linear-gradient(90deg, #FF4D6D, #5A189A)'
+                      }}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
