@@ -24,6 +24,14 @@ const Dashboard = () => {
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [selectedChat, setSelectedChat] = useState<any>(null);
+  const [analytics, setAnalytics] = useState({
+    matchSuccessRate: 0,
+    responseRate: 0,
+    profileCompleteness: 0,
+    totalMatches: 0,
+    activeChats: 0,
+    lastUpdated: new Date(),
+  });
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -37,6 +45,7 @@ const Dashboard = () => {
       setUser(session.user);
       loadProfile(session.user.id);
       calculateMatches(session.user.id);
+      loadAnalytics(session.user.id);
     });
 
     // Listen for auth changes
@@ -49,6 +58,17 @@ const Dashboard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Poll analytics every 10 seconds
+  useEffect(() => {
+    if (!user) return;
+    
+    const interval = setInterval(() => {
+      loadAnalytics(user.id);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   const loadProfile = async (userId: string) => {
     try {
@@ -101,6 +121,86 @@ const Dashboard = () => {
       });
     } finally {
       setLoadingMatches(false);
+    }
+  };
+
+  const loadAnalytics = async (userId: string) => {
+    try {
+      // Get total matches
+      const { data: matchesData } = await supabase
+        .from('matches')
+        .select('id')
+        .eq('user_id', userId);
+
+      // Get active conversations
+      const { data: conversations } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+
+      // Get total sent requests
+      const { data: sentRequests } = await supabase
+        .from('match_requests')
+        .select('id, status')
+        .eq('sender_id', userId);
+
+      // Get profile data for completeness calculation
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('first_name, age, location, bio, profile_photo_url, tagline')
+        .eq('user_id', userId)
+        .single();
+
+      const { data: media } = await supabase
+        .from('user_media')
+        .select('id')
+        .eq('user_id', userId);
+
+      // Get sent messages for response rate
+      const { data: sentMessages } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('sender_id', userId);
+
+      // Get received messages that are marked as read
+      const { data: readMessages } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('receiver_id', userId)
+        .eq('read', true);
+
+      // Calculate match success rate
+      const totalRequests = sentRequests?.length || 0;
+      const acceptedRequests = sentRequests?.filter(r => r.status === 'accepted').length || 0;
+      const matchSuccessRate = totalRequests > 0 ? Math.round((acceptedRequests / totalRequests) * 100) : 0;
+
+      // Calculate response rate
+      const totalSentMessages = sentMessages?.length || 0;
+      const totalReadMessages = readMessages?.length || 0;
+      const responseRate = totalSentMessages > 0 ? Math.round((totalReadMessages / totalSentMessages) * 100) : 0;
+
+      // Calculate profile completeness
+      let completenessScore = 0;
+      if (profileData) {
+        if (profileData.first_name) completenessScore += 15;
+        if (profileData.age) completenessScore += 15;
+        if (profileData.location) completenessScore += 15;
+        if (profileData.bio) completenessScore += 20;
+        if (profileData.profile_photo_url) completenessScore += 25;
+        if (profileData.tagline) completenessScore += 10;
+      }
+      if (media && media.length > 0) completenessScore = Math.min(100, completenessScore + (media.length * 5));
+
+      setAnalytics({
+        matchSuccessRate,
+        responseRate,
+        profileCompleteness: completenessScore,
+        totalMatches: matchesData?.length || 0,
+        activeChats: conversations?.length || 0,
+        lastUpdated: new Date(),
+      });
+    } catch (error) {
+      console.error("Error loading analytics:", error);
     }
   };
 
@@ -437,42 +537,76 @@ const Dashboard = () => {
                 <CardContent>
                   <div className="space-y-6">
                     <div>
-                      <div className="flex justify-between mb-2">
+                      <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-medium">Match Success Rate</span>
-                        <span className="text-sm font-bold text-primary">78%</span>
+                        <span className="text-sm font-bold text-primary">{analytics.matchSuccessRate}%</span>
                       </div>
-                      <Progress value={78} className="h-3" />
+                      <div className="relative h-3 w-full overflow-hidden rounded-full bg-secondary/20">
+                        <div 
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{ 
+                            width: `${analytics.matchSuccessRate}%`,
+                            background: 'linear-gradient(90deg, #FF4D6D, #5A189A)'
+                          }}
+                        />
+                      </div>
                     </div>
 
                     <div>
-                      <div className="flex justify-between mb-2">
+                      <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-medium">Response Rate</span>
-                        <span className="text-sm font-bold text-primary">65%</span>
+                        <span className="text-sm font-bold text-primary">{analytics.responseRate}%</span>
                       </div>
-                      <Progress value={65} className="h-3" />
+                      <div className="relative h-3 w-full overflow-hidden rounded-full bg-secondary/20">
+                        <div 
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{ 
+                            width: `${analytics.responseRate}%`,
+                            background: 'linear-gradient(90deg, #FF4D6D, #5A189A)'
+                          }}
+                        />
+                      </div>
                     </div>
 
                     <div>
-                      <div className="flex justify-between mb-2">
+                      <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-medium">Profile Completeness</span>
-                        <span className="text-sm font-bold text-primary">85%</span>
+                        <span className="text-sm font-bold text-primary">{analytics.profileCompleteness}%</span>
                       </div>
-                      <Progress value={85} className="h-3" />
+                      <div className="relative h-3 w-full overflow-hidden rounded-full bg-secondary/20">
+                        <div 
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{ 
+                            width: `${analytics.profileCompleteness}%`,
+                            background: 'linear-gradient(90deg, #FF4D6D, #5A189A)'
+                          }}
+                        />
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mt-6">
                       <Card className="bg-gradient-to-br from-primary/10 to-secondary/10">
                         <CardContent className="pt-6 text-center">
-                          <p className="text-3xl font-bold text-primary">12</p>
+                          <p className="text-3xl font-bold text-primary animate-fade-in">{analytics.totalMatches}</p>
                           <p className="text-sm text-muted-foreground">Total Matches</p>
                         </CardContent>
                       </Card>
                       <Card className="bg-gradient-to-br from-primary/10 to-secondary/10">
                         <CardContent className="pt-6 text-center">
-                          <p className="text-3xl font-bold text-primary">8</p>
+                          <p className="text-3xl font-bold text-primary animate-fade-in">{analytics.activeChats}</p>
                           <p className="text-sm text-muted-foreground">Active Chats</p>
                         </CardContent>
                       </Card>
+                    </div>
+
+                    <div className="mt-6 p-3 bg-muted/50 rounded-lg text-center text-xs text-muted-foreground space-y-1">
+                      <p className="font-medium flex items-center justify-center gap-2">
+                        <span className="inline-block w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                        Real-Time Analytics
+                      </p>
+                      <p className="text-[10px]">
+                        Last updated: {analytics.lastUpdated.toLocaleTimeString()} • Auto-refreshes every 10s
+                      </p>
                     </div>
                   </div>
                 </CardContent>
