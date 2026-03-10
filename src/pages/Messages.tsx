@@ -191,7 +191,7 @@ const Messages = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
                       {/* No photos until unlocked — show gradient avatar */}
-                      <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary via-secondary to-pink-400 flex items-center justify-center flex-shrink-0">
+                      <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary via-primary-dark to-primary-dark flex items-center justify-center flex-shrink-0">
                         <span className="text-white text-2xl font-bold">{conversation.name[0]}</span>
                       </div>
                       

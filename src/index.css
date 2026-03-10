@@ -17,12 +17,12 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 334 78% 20%;
 
-    --primary: 345 100% 65%;
+    --primary: 345 100% 38%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 345 100% 75%;
-    --primary-dark: 345 100% 55%;
+    --primary-light: 345 100% 50%;
+    --primary-dark: 345 100% 26%;
 
-    --secondary: 270 70% 35%;
+    --secondary: 345 90% 22%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 334 30% 96%;
@@ -41,16 +41,16 @@ All colors MUST be HSL.
     --radius: 1rem;
     
     /* Custom gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(345, 100%, 65%), hsl(270, 70%, 35%));
-    --gradient-hero: linear-gradient(180deg, hsl(345, 100%, 65%), hsl(270, 70%, 35%));
-    --gradient-card: linear-gradient(135deg, hsla(345, 100%, 65%, 0.1), hsla(270, 70%, 35%, 0.1));
+    --gradient-primary: linear-gradient(135deg, hsl(345, 100%, 38%), hsl(345, 90%, 22%));
+    --gradient-hero: linear-gradient(180deg, hsl(345, 100%, 38%), hsl(345, 90%, 22%));
+    --gradient-card: linear-gradient(135deg, hsla(345, 100%, 38%, 0.1), hsla(345, 90%, 22%, 0.1));
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
     /* Shadows */
-    --shadow-primary: 0 6px 24px hsla(334, 78%, 59%, 0.2);
-    --shadow-card: 0 2px 12px hsla(334, 78%, 59%, 0.12);
+    --shadow-primary: 0 6px 24px hsla(345, 100%, 38%, 0.3);
+    --shadow-card: 0 2px 12px hsla(345, 100%, 38%, 0.15);
 
     --sidebar-background: 0 0% 98%;
 
@@ -79,12 +79,12 @@ All colors MUST be HSL.
     --popover: 334 40% 12%;
     --popover-foreground: 334 30% 95%;
 
-    --primary: 345 100% 65%;
+    --primary: 345 100% 38%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 345 100% 75%;
-    --primary-dark: 345 100% 55%;
+    --primary-light: 345 100% 50%;
+    --primary-dark: 345 100% 26%;
 
-    --secondary: 270 70% 35%;
+    --secondary: 345 90% 22%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 334 40% 15%;
@@ -100,9 +100,9 @@ All colors MUST be HSL.
     --input: 334 40% 18%;
     --ring: 334 78% 59%;
     
-    --gradient-primary: linear-gradient(135deg, hsl(345, 100%, 65%), hsl(270, 70%, 35%));
-    --gradient-hero: linear-gradient(180deg, hsl(345, 100%, 65%), hsl(270, 70%, 35%));
-    --gradient-card: linear-gradient(135deg, hsla(345, 100%, 65%, 0.1), hsla(270, 70%, 35%, 0.1));
+    --gradient-primary: linear-gradient(135deg, hsl(345, 100%, 38%), hsl(345, 90%, 22%));
+    --gradient-hero: linear-gradient(180deg, hsl(345, 100%, 38%), hsl(345, 90%, 22%));
+    --gradient-card: linear-gradient(135deg, hsla(345, 100%, 38%, 0.1), hsla(345, 90%, 22%, 0.1));
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -130,7 +130,7 @@ All colors MUST be HSL.
 
 @layer utilities {
   .text-gradient-brand {
-    @apply bg-gradient-to-r from-[#FF4D6D] to-[#5A189A] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#C1003A] to-[#7A0025] bg-clip-text text-transparent;
   }
   
   .hover-glow {
@@ -138,7 +138,7 @@ All colors MUST be HSL.
   }
   
   .hover-glow:hover {
-    filter: drop-shadow(0 0 8px rgba(255, 77, 109, 0.6));
+    filter: drop-shadow(0 0 8px rgba(193, 0, 58, 0.7));
   }
 
   .hover-scale {

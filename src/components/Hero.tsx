@@ -20,7 +20,7 @@ const Hero = () => {
   return (
     <section
       className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-32 md:pt-24 pb-20"
-      style={{ background: "linear-gradient(135deg, #FF4D6D, #FF758C)" }}
+      style={{ background: "linear-gradient(135deg, #C1003A, #8B0028)" }}
     >
       {/* Floating personality trait cards */}
       {floatingTraits.map((trait, i) => (

@@ -141,7 +141,7 @@ const Discover = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 to-red-50">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -150,7 +150,7 @@ const Discover = () => {
   const currentProfile = profiles[currentIndex];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 to-purple-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-rose-50 to-red-50">
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-8">
@@ -206,7 +206,7 @@ const Discover = () => {
                     size="lg"
                     onClick={handleSendRequest}
                     disabled={sending}
-                    className="w-20 h-20 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+                    className="w-20 h-20 rounded-full bg-gradient-to-r bg-[#C1003A] hover:bg-[#8B0028]"
                   >
                     {sending ? (
                       <Loader2 className="h-8 w-8 animate-spin" />

@@ -324,7 +324,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <Button
               onClick={() => navigate("/discover")}
-              className="h-24 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white"
+              className="h-24 text-white" style={{ background: 'linear-gradient(135deg, #C1003A, #8B0028)' }}
               size="lg"
             >
               <div className="flex flex-col items-center gap-2">
@@ -334,7 +334,7 @@ const Dashboard = () => {
             </Button>
             <Button
               onClick={() => navigate("/requests")}
-              className="h-24 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+              className="h-24 text-white" style={{ background: 'linear-gradient(135deg, #8B0028, #C1003A)' }}
               size="lg"
             >
               <div className="flex flex-col items-center gap-2">
@@ -407,7 +407,7 @@ const Dashboard = () => {
                         <Card key={match.matched_user_id} className="hover:shadow-lg transition-shadow">
                           <CardContent className="pt-6 text-center">
                             {/* Personality-first: always show gradient avatar, no photo */}
-                            <div className="h-20 w-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary via-secondary to-pink-400 flex items-center justify-center ring-4 ring-primary/20">
+                            <div className="h-20 w-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary via-primary-dark to-primary-dark flex items-center justify-center ring-4 ring-primary/20">
                               <span className="text-white text-2xl font-bold">
                                 {match.profile.first_name[0]}
                               </span>
@@ -555,7 +555,7 @@ const Dashboard = () => {
                           className="h-full rounded-full transition-all duration-500"
                           style={{ 
                             width: `${analytics.matchSuccessRate}%`,
-                            background: 'linear-gradient(90deg, #FF4D6D, #5A189A)'
+                            background: 'linear-gradient(90deg, #C1003A, #8B0028)'
                           }}
                         />
                       </div>
@@ -571,7 +571,7 @@ const Dashboard = () => {
                           className="h-full rounded-full transition-all duration-500"
                           style={{ 
                             width: `${analytics.responseRate}%`,
-                            background: 'linear-gradient(90deg, #FF4D6D, #5A189A)'
+                            background: 'linear-gradient(90deg, #C1003A, #8B0028)'
                           }}
                         />
                       </div>
@@ -587,7 +587,7 @@ const Dashboard = () => {
                           className="h-full rounded-full transition-all duration-500"
                           style={{ 
                             width: `${analytics.profileCompleteness}%`,
-                            background: 'linear-gradient(90deg, #FF4D6D, #5A189A)'
+                            background: 'linear-gradient(90deg, #C1003A, #8B0028)'
                           }}
                         />
                       </div>
