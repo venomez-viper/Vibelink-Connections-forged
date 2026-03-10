@@ -33,7 +33,7 @@ const Header = () => {
         <div className="flex items-center justify-between rounded-md mx-[5px] my-0 px-[3px] py-0">
           {/* Logo */}
           <Link to="/" className="flex items-center -space-x-2 sm:-space-x-3 group">
-            <img src={logo} alt="VibeLink Logo" className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 transition-transform group-hover:scale-105" />
+            <img src={logo} alt="VibeLink Logo" className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 transition-transform group-hover:scale-105" />
             <span className="font-freestyle text-white text-3xl sm:text-4xl md:text-5xl leading-none -ml-1 hover-glow drop-shadow-lg">
               VibeLink
             </span>
