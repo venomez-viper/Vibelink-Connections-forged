@@ -1,6 +1,7 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "env": {
     "VITE_CHAT_SERVER_URL": "https://vibelink-connections-forged.onrender.com"
   }
