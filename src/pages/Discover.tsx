@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, X, MapPin, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
@@ -190,8 +191,25 @@ const Discover = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 to-red-50">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex flex-col bg-slate-950 overflow-hidden">
+        <Header />
+        <main className="flex-1 max-w-md w-full mx-auto px-4 py-8 flex flex-col relative z-10 pt-24 pb-[80px]">
+          <div className="relative flex-1 flex items-center justify-center w-full">
+            <div className="absolute w-full h-[65vh] sm:max-h-[550px]" style={{ zIndex: 3 }}>
+              <Skeleton className="w-full h-full rounded-2xl bg-slate-900/80 shadow-2xl" />
+            </div>
+            <div className="absolute w-full h-[65vh] sm:max-h-[550px]" style={{ transform: 'scale(0.95) translateY(15px) rotate(-2deg)', zIndex: 2 }}>
+              <Skeleton className="w-full h-full rounded-2xl bg-slate-800/50" />
+            </div>
+            <div className="absolute w-full h-[65vh] sm:max-h-[550px]" style={{ transform: 'scale(0.9) translateY(30px) rotate(2deg)', zIndex: 1 }}>
+              <Skeleton className="w-full h-full rounded-2xl bg-slate-800/30" />
+            </div>
+          </div>
+          <div className="flex gap-6 justify-center mt-8 items-center h-[80px]">
+            <Skeleton className="w-16 h-16 rounded-full bg-slate-800" />
+            <Skeleton className="w-20 h-20 rounded-full bg-slate-800" />
+          </div>
+        </main>
       </div>
     );
   }
@@ -200,13 +218,15 @@ const Discover = () => {
   const cardsToRender = profiles.slice(currentIndex, currentIndex + 3).reverse();
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 overflow-hidden">
-      <Header />
+    <div className="flex flex-col h-screen bg-slate-950 overflow-hidden">
+      <div className="shrink-0 z-50">
+        <Header />
+      </div>
 
-      <main className="flex-1 max-w-md w-full mx-auto px-4 py-8 flex flex-col relative z-10 pt-24 pb-[80px]">
+      <main className="flex-1 max-w-md w-full mx-auto px-4 flex flex-col relative z-10 pt-4 pb-8 overflow-hidden">
         {/* Title removed to maximize swipe area for standard dating app feel */}
 
-        <div className="relative flex-1 flex items-center justify-center w-full">
+        <div className="flex-1 w-full relative">
           {cardsToRender.length > 0 ? (
             cardsToRender.map((profile, arrayIndex) => {
               // Reversed array means arrayIndex 0 is actually the furthest card back.
@@ -217,7 +237,7 @@ const Discover = () => {
               return (
                 <motion.div
                   key={profile.user_id}
-                  className="absolute w-full h-[65vh] sm:max-h-[550px]"
+                  className="absolute inset-0 pb-4" // pb-4 adds a little breathing room at the bottom of the container
                   style={{
                     x: isActiveCard ? x : 0,
                     rotate: isActiveCard ? rotate : depthIndex === 1 ? -2 : 2,
@@ -273,31 +293,31 @@ const Discover = () => {
 
                     {/* Profile Information (Bottom text) */}
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-white pointer-events-none">
-                      <h2 className="text-4xl font-bold mb-1 drop-shadow-md">
+                      <h2 className="text-3xl sm:text-4xl font-bold mb-1 drop-shadow-md truncate">
                         {profile.first_name}, {profile.age}
                       </h2>
 
-                      <div className="flex flex-col gap-2 mt-2">
+                      <div className="flex flex-col gap-1 sm:gap-2 mt-2">
                         {profile.location && (
                           <div className="flex items-center gap-2 text-slate-200">
-                            <MapPin className="h-5 w-5 opacity-80" />
-                            <span className="text-lg">{profile.location}</span>
+                            <MapPin className="h-4 w-4 sm:h-5 sm:w-5 opacity-80 shrink-0" />
+                            <span className="text-base sm:text-lg truncate">{profile.location}</span>
                           </div>
                         )}
 
                         {profile.tagline && (
-                          <div className="text-lg italic text-slate-300 font-medium">"{profile.tagline}"</div>
+                          <div className="text-base sm:text-lg italic text-slate-300 font-medium line-clamp-1">"{profile.tagline}"</div>
                         )}
 
                         {profile.bio && (
-                          <p className="text-slate-300 mt-2 line-clamp-2 text-sm">
+                          <p className="text-slate-300 mt-1 sm:mt-2 line-clamp-2 text-xs sm:text-sm">
                             {profile.bio}
                           </p>
                         )}
                       </div>
 
                       {profile.compatibility_score && (
-                        <div className="mt-4 inline-block bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-semibold border border-white/30">
+                        <div className="mt-3 sm:mt-4 inline-block bg-white/20 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold border border-white/30">
                           {profile.compatibility_score}% Vibe Match
                         </div>
                       )}
@@ -311,14 +331,14 @@ const Discover = () => {
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="w-full"
+              className="w-full h-full flex items-center justify-center"
             >
-              <Card className="max-w-md mx-auto p-12 text-center bg-slate-900 border-slate-800 text-white rounded-2xl shadow-xl">
-                <div className="bg-slate-800/50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Heart className="w-12 h-12 text-slate-600" />
+              <Card className="w-full p-8 sm:p-12 text-center bg-slate-900 border-slate-800 text-white rounded-2xl shadow-xl">
+                <div className="bg-slate-800/50 w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Heart className="w-10 h-10 sm:w-12 sm:h-12 text-slate-600" />
                 </div>
-                <h2 className="text-3xl font-bold mb-4">You're All Caught Up</h2>
-                <p className="text-slate-400 mb-8 text-lg">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4">You're All Caught Up</h2>
+                <p className="text-slate-400 mb-8 text-base sm:text-lg">
                   There's no one new around you.<br />Check back later!
                 </p>
                 <Button
@@ -335,26 +355,26 @@ const Discover = () => {
 
         {/* Swipe Action Buttons */}
         {cardsToRender.length > 0 && (
-          <div className="flex gap-6 justify-center mt-8 items-center h-[80px]">
+          <div className="shrink-0 flex gap-6 justify-center items-center mt-4">
             <Button
               size="icon"
               variant="outline"
               onClick={handlePassBtn}
-              className="w-16 h-16 rounded-full border-2 border-red-500 text-red-500 hover:bg-red-500/10 hover:text-red-400 bg-slate-900/50 backdrop-blur-md transition-transform active:scale-95"
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-red-500 text-red-500 hover:bg-red-500/10 hover:text-red-400 bg-slate-900/50 backdrop-blur-md transition-transform active:scale-95 z-20"
             >
-              <X className="h-8 w-8" />
+              <X className="h-6 w-6 sm:h-8 sm:w-8" />
             </Button>
 
             <Button
               size="icon"
               onClick={handleSendRequestBtn}
               disabled={sending}
-              className="w-20 h-20 rounded-full text-white bg-gradient-to-tr from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 shadow-[0_0_20px_rgba(244,63,94,0.3)] transition-transform active:scale-95 border-0"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full text-white bg-gradient-to-tr from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 shadow-[0_0_20px_rgba(244,63,94,0.3)] transition-transform active:scale-95 border-0 z-20"
             >
               {sending ? (
-                <Loader2 className="h-8 w-8 animate-spin" />
+                <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin" />
               ) : (
-                <Heart className="h-10 w-10 fill-white" />
+                <Heart className="h-8 w-8 sm:h-10 sm:w-10 fill-white" />
               )}
             </Button>
           </div>

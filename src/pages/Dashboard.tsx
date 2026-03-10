@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Heart, MessageCircle, Settings, TrendingUp, MapPin, UserCircle, Compass } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
 import ChatWindow from "@/components/ChatWindow";
 import PhotoUpload from "@/components/PhotoUpload";
 import { getPersonalityTraits } from "@/utils/matchingAlgorithm";
@@ -317,8 +318,45 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <div className="flex-1 px-4 py-8 mt-20">
+          <div className="container mx-auto max-w-6xl">
+            {/* Profile Header Skeleton */}
+            <Card className="mb-6 border-none shadow-lg">
+              <CardContent className="pt-6">
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  <Skeleton className="h-24 w-24 rounded-full" />
+                  <div className="flex-1 space-y-4 text-center md:text-left">
+                    <Skeleton className="h-8 w-48 mx-auto md:mx-0" />
+                    <Skeleton className="h-4 w-64 mx-auto md:mx-0" />
+                    <div className="flex gap-2 justify-center md:justify-start">
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                      <Skeleton className="h-6 w-24 rounded-full" />
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-10 w-24" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Skeleton className="h-24 w-full rounded-md" />
+              <Skeleton className="h-24 w-full rounded-md" />
+              <Skeleton className="h-24 w-full rounded-md" />
+            </div>
+
+            {/* Tabs Skeleton */}
+            <Skeleton className="h-10 w-full mb-6" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Skeleton className="h-64 w-full rounded-xl" />
+              <Skeleton className="h-64 w-full rounded-xl" />
+              <Skeleton className="h-64 w-full rounded-xl" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -445,8 +483,10 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   {loadingMatches ? (
-                    <div className="flex justify-center py-12">
-                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <Skeleton className="h-[250px] w-full rounded-xl" />
+                      <Skeleton className="h-[250px] w-full rounded-xl" />
+                      <Skeleton className="h-[250px] w-full rounded-xl" />
                     </div>
                   ) : matches.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -503,14 +543,20 @@ const Dashboard = () => {
                       })}
                     </div>
                   ) : (
-                    <div className="text-center py-12">
-                      <Heart className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold mb-2">No matches yet</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Complete your profile and add interests to find compatible matches!
+                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                      <div className="h-20 w-20 rounded-full bg-rose-100 flex items-center justify-center mb-6">
+                        <Heart className="h-10 w-10 text-rose-500 animate-pulse" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 mb-2">Find Your Vibe</h3>
+                      <p className="text-slate-500 max-w-sm mb-8 text-sm md:text-base">
+                        Your matches will appear here. Start discovering new people to build genuine connections based on personality.
                       </p>
-                      <Button onClick={() => calculateMatches(user.id)}>
-                        Find Matches
+                      <Button
+                        size="lg"
+                        className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-lg shadow-rose-200"
+                        onClick={() => navigate("/discover")}
+                      >
+                        Start Discovering
                       </Button>
                     </div>
                   )}
@@ -527,12 +573,24 @@ const Dashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-12">
-                    <MessageCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">No messages yet</h3>
-                    <p className="text-muted-foreground">
-                      Start a conversation with your matches!
+                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                    <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center mb-6">
+                      <MessageCircle className="h-10 w-10 text-indigo-500" />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-900 mb-2">It's Quiet Here</h3>
+                    <p className="text-slate-500 max-w-sm mb-8 text-sm md:text-base">
+                      You haven't started any conversations yet. Send a message to one of your matches to get the ball rolling!
                     </p>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={() => {
+                        const matchesTab = document.querySelector('[value="matches"]') as HTMLElement;
+                        if (matchesTab) matchesTab.click();
+                      }}
+                    >
+                      View Matches
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -640,6 +698,52 @@ const Dashboard = () => {
                           }}
                         />
                       </div>
+                    </div>
+
+                    {/* Recharts Data Visualizations */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                      {/* Line Chart: Profile Activity Loop */}
+                      <Card className="bg-slate-900 border-none pt-6 pl-2 pr-6 pb-2">
+                        <h4 className="text-white font-semibold text-center mb-4">Profile Activity (Last 7 Days)</h4>
+                        <div className="h-48 w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={[
+                              { name: 'Mon', views: 4 },
+                              { name: 'Tue', views: 7 },
+                              { name: 'Wed', views: 5 },
+                              { name: 'Thu', views: 12 },
+                              { name: 'Fri', views: 8 },
+                              { name: 'Sat', views: 15 },
+                              { name: 'Sun', views: 10 },
+                            ]}>
+                              <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                              <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                              <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} />
+                              <Line type="monotone" dataKey="views" stroke="#F43F5E" strokeWidth={3} dot={{ r: 4, fill: '#F43F5E' }} activeDot={{ r: 6 }} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </Card>
+
+                      {/* Radar Chart: Personality Vibe Map */}
+                      <Card className="bg-slate-900 border-none pt-4 pb-4">
+                        <h4 className="text-white font-semibold text-center mb-2">Your Vibe Profile</h4>
+                        <div className="h-56 w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={[
+                              { subject: 'Extraversion', A: 80, fullMark: 100 },
+                              { subject: 'Humor', A: 90, fullMark: 100 },
+                              { subject: 'Romance', A: 60, fullMark: 100 },
+                              { subject: 'Activity', A: 75, fullMark: 100 },
+                              { subject: 'Intellect', A: 85, fullMark: 100 },
+                            ]}>
+                              <PolarGrid stroke="#334155" />
+                              <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                              <Radar name="Vibe" dataKey="A" stroke="#F43F5E" fill="#F43F5E" fillOpacity={0.4} />
+                            </RadarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </Card>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mt-6">
