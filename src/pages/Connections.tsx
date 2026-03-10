@@ -53,7 +53,7 @@ const Connections = () => {
 
   const checkAuthAndLoadData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    
+
     if (!session) {
       navigate('/login');
       return;
@@ -66,32 +66,50 @@ const Connections = () => {
   };
 
   const loadActiveMatches = async (userId: string) => {
-    const { data: matches, error } = await supabase
-      .from('matches')
-      .select('id, matched_user_id, compatibility_score')
-      .eq('user_id', userId);
+    // 1. Fetch only accepted match requests where current user is involved
+    const { data: acceptedRequests, error: reqError } = await supabase
+      .from('match_requests')
+      .select('id, sender_id, receiver_id')
+      .eq('status', 'accepted')
+      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
 
-    if (error) {
-      console.error("Error loading matches:", error);
+    if (reqError) {
+      console.error("Error loading accepted requests:", reqError);
       return;
     }
 
-    if (!matches || matches.length === 0) {
+    if (!acceptedRequests || acceptedRequests.length === 0) {
       setActiveMatches([]);
       return;
     }
 
-    // Fetch profiles for matched users
-    const matchedUserIds = matches.map(m => m.matched_user_id);
+    // 2. Map to extract the other user's ID
+    const matchedUserIds = acceptedRequests.map(req =>
+      req.sender_id === userId ? req.receiver_id : req.sender_id
+    );
+
+    // 3. Optionally fetch compatibility scores
+    const { data: matchScores } = await supabase
+      .from('matches')
+      .select('matched_user_id, compatibility_score')
+      .eq('user_id', userId)
+      .in('matched_user_id', matchedUserIds);
+
+    const scoreMap = new Map();
+    matchScores?.forEach(m => scoreMap.set(m.matched_user_id, m.compatibility_score));
+
+    // 4. Fetch profiles for matched users
     const { data: profiles } = await supabase
       .from('profiles')
       .select('user_id, first_name, age, location, profile_photo_url, bio')
       .in('user_id', matchedUserIds);
 
-    const matchesWithProfiles = matches.map(match => {
-      const profile = profiles?.find(p => p.user_id === match.matched_user_id);
+    const matchesWithProfiles = matchedUserIds.map((targetUserId, index) => {
+      const profile = profiles?.find(p => p.user_id === targetUserId);
       return {
-        ...match,
+        id: acceptedRequests[index].id, // Use the request ID as unique key
+        matched_user_id: targetUserId,
+        compatibility_score: scoreMap.get(targetUserId) || 75,
         profile: profile || {
           first_name: 'Unknown',
           age: 0,
@@ -240,7 +258,7 @@ const Connections = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-romantic-50 via-white to-romantic-100">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-24">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
@@ -289,7 +307,7 @@ const Connections = () => {
                             {match.profile.first_name[0]}
                           </AvatarFallback>
                         </Avatar>
-                        
+
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="text-2xl font-semibold">
@@ -341,7 +359,7 @@ const Connections = () => {
                             {request.profile.first_name[0]}
                           </AvatarFallback>
                         </Avatar>
-                        
+
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="text-2xl font-semibold">

@@ -63,7 +63,7 @@ const Dashboard = () => {
   // Poll analytics every 10 seconds
   useEffect(() => {
     if (!user) return;
-    
+
     const interval = setInterval(() => {
       loadAnalytics(user.id);
     }, 10000);
@@ -107,17 +107,66 @@ const Dashboard = () => {
   const calculateMatches = async (userId: string) => {
     setLoadingMatches(true);
     try {
-      const { data, error } = await supabase.functions.invoke("calculate-compatibility", {
-        body: { userId },
-      });
+      // 1. Fetch only accepted match requests where current user is involved
+      const { data: acceptedRequests, error: reqError } = await supabase
+        .from('match_requests')
+        .select('*')
+        .eq('status', 'accepted')
+        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
 
-      if (error) throw error;
-      setMatches(data.matches || []);
+      if (reqError) throw reqError;
+
+      if (!acceptedRequests || acceptedRequests.length === 0) {
+        setMatches([]);
+        return;
+      }
+
+      // 2. Map to extract the other user's ID
+      const otherUserIds = acceptedRequests.map(req =>
+        req.sender_id === userId ? req.receiver_id : req.sender_id
+      );
+
+      if (otherUserIds.length === 0) {
+        setMatches([]);
+        return;
+      }
+
+      // 3. Fetch profiles for these users
+      const { data: profilesData, error: profError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('user_id', otherUserIds);
+
+      if (profError) throw profError;
+
+      // 4. Optionally fetch compatibility_score from the matches table
+      // (Even though edge function inserts them, we only care about real pairs)
+      const { data: matchScores } = await supabase
+        .from('matches')
+        .select('matched_user_id, compatibility_score')
+        .eq('user_id', userId)
+        .in('matched_user_id', otherUserIds);
+
+      const scoreMap = new Map();
+      matchScores?.forEach(m => scoreMap.set(m.matched_user_id, m.compatibility_score));
+
+      // 5. Construct final matches array expected by UI
+      const validMatches = (profilesData || []).map(profile => ({
+        matched_user_id: profile.user_id,
+        compatibility_score: scoreMap.get(profile.user_id) || 75, // Default fallback score
+        profile: profile
+      }));
+
+      // Sort by score
+      validMatches.sort((a, b) => b.compatibility_score - a.compatibility_score);
+
+      setMatches(validMatches);
+
     } catch (error) {
-      console.error("Error calculating matches:", error);
+      console.error("Error calculating actual matches:", error);
       toast({
         title: "Error",
-        description: "Failed to load matches",
+        description: "Failed to load actual matches",
         variant: "destructive",
       });
     } finally {
@@ -277,7 +326,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      
+
       <div className="flex-1 px-4 py-8 mt-20">
         <div className="container mx-auto max-w-6xl">
           {/* Profile Header */}
@@ -290,7 +339,7 @@ const Dashboard = () => {
                     {profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                
+
                 <div className="flex-1 text-center md:text-left">
                   <h1 className="text-3xl font-bold text-foreground mb-1">
                     {profile?.first_name || "User"}
@@ -384,7 +433,7 @@ const Dashboard = () => {
                       <Heart className="h-5 w-5 text-primary" />
                       Your Matches
                     </div>
-                    <Button 
+                    <Button
                       onClick={() => calculateMatches(user.id)}
                       disabled={loadingMatches}
                       variant="outline"
@@ -404,52 +453,52 @@ const Dashboard = () => {
                       {matches.map((match) => {
                         const traits = getPersonalityTraits(match.profile?.personality_answers);
                         return (
-                        <Card key={match.matched_user_id} className="hover:shadow-lg transition-shadow">
-                          <CardContent className="pt-6 text-center">
-                            {/* Personality-first: always show gradient avatar, no photo */}
-                            <div className="h-20 w-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary via-primary-dark to-primary-dark flex items-center justify-center ring-4 ring-primary/20">
-                              <span className="text-white text-2xl font-bold">
-                                {match.profile.first_name[0]}
-                              </span>
-                            </div>
-                            <h3 className="font-semibold text-lg mb-1">{match.profile.first_name}, {match.profile.age}</h3>
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                              <Badge variant="secondary" className="bg-primary/20 text-primary font-semibold">
-                                {match.compatibility_score}% vibe match
-                              </Badge>
-                            </div>
-                            {match.profile.location && (
-                              <p className="text-sm text-muted-foreground mb-2 flex items-center justify-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                {match.profile.location}
-                              </p>
-                            )}
-                            {traits.length > 0 ? (
-                              <div className="flex flex-wrap gap-1 justify-center mb-3">
-                                {traits.map((trait: string, i: number) => (
-                                  <Badge key={i} variant="outline" className="text-xs border-primary/40 text-primary">
-                                    {trait}
-                                  </Badge>
-                                ))}
+                          <Card key={match.matched_user_id} className="hover:shadow-lg transition-shadow">
+                            <CardContent className="pt-6 text-center">
+                              {/* Personality-first: always show gradient avatar, no photo */}
+                              <div className="h-20 w-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary via-primary-dark to-primary-dark flex items-center justify-center ring-4 ring-primary/20">
+                                <span className="text-white text-2xl font-bold">
+                                  {match.profile.first_name[0]}
+                                </span>
                               </div>
-                            ) : match.profile.interests?.length > 0 ? (
-                              <div className="flex flex-wrap gap-1 justify-center mb-3">
-                                {match.profile.interests.slice(0, 3).map((interest: string, i: number) => (
-                                  <Badge key={i} variant="outline" className="text-xs">
-                                    {interest}
-                                  </Badge>
-                                ))}
+                              <h3 className="font-semibold text-lg mb-1">{match.profile.first_name}, {match.profile.age}</h3>
+                              <div className="flex items-center justify-center gap-2 mb-2">
+                                <Badge variant="secondary" className="bg-primary/20 text-primary font-semibold">
+                                  {match.compatibility_score}% vibe match
+                                </Badge>
                               </div>
-                            ) : null}
-                            <Button
-                              size="sm"
-                              className="w-full bg-gradient-to-r from-primary to-secondary"
-                              onClick={() => openChat(match)}
-                            >
-                              Start Chatting
-                            </Button>
-                          </CardContent>
-                        </Card>
+                              {match.profile.location && (
+                                <p className="text-sm text-muted-foreground mb-2 flex items-center justify-center gap-1">
+                                  <MapPin className="h-3 w-3" />
+                                  {match.profile.location}
+                                </p>
+                              )}
+                              {traits.length > 0 ? (
+                                <div className="flex flex-wrap gap-1 justify-center mb-3">
+                                  {traits.map((trait: string, i: number) => (
+                                    <Badge key={i} variant="outline" className="text-xs border-primary/40 text-primary">
+                                      {trait}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              ) : match.profile.interests?.length > 0 ? (
+                                <div className="flex flex-wrap gap-1 justify-center mb-3">
+                                  {match.profile.interests.slice(0, 3).map((interest: string, i: number) => (
+                                    <Badge key={i} variant="outline" className="text-xs">
+                                      {interest}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              ) : null}
+                              <Button
+                                size="sm"
+                                className="w-full bg-gradient-to-r from-primary to-secondary"
+                                onClick={() => openChat(match)}
+                              >
+                                Start Chatting
+                              </Button>
+                            </CardContent>
+                          </Card>
                         );
                       })}
                     </div>
@@ -551,9 +600,9 @@ const Dashboard = () => {
                         <span className="text-sm font-bold text-primary">{analytics.matchSuccessRate}%</span>
                       </div>
                       <div className="relative h-3 w-full overflow-hidden rounded-full bg-secondary/20">
-                        <div 
+                        <div
                           className="h-full rounded-full transition-all duration-500"
-                          style={{ 
+                          style={{
                             width: `${analytics.matchSuccessRate}%`,
                             background: 'linear-gradient(90deg, #C1003A, #8B0028)'
                           }}
@@ -567,9 +616,9 @@ const Dashboard = () => {
                         <span className="text-sm font-bold text-primary">{analytics.responseRate}%</span>
                       </div>
                       <div className="relative h-3 w-full overflow-hidden rounded-full bg-secondary/20">
-                        <div 
+                        <div
                           className="h-full rounded-full transition-all duration-500"
-                          style={{ 
+                          style={{
                             width: `${analytics.responseRate}%`,
                             background: 'linear-gradient(90deg, #C1003A, #8B0028)'
                           }}
@@ -583,9 +632,9 @@ const Dashboard = () => {
                         <span className="text-sm font-bold text-primary">{analytics.profileCompleteness}%</span>
                       </div>
                       <div className="relative h-3 w-full overflow-hidden rounded-full bg-secondary/20">
-                        <div 
+                        <div
                           className="h-full rounded-full transition-all duration-500"
-                          style={{ 
+                          style={{
                             width: `${analytics.profileCompleteness}%`,
                             background: 'linear-gradient(90deg, #C1003A, #8B0028)'
                           }}
