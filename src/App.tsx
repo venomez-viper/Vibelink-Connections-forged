@@ -21,6 +21,7 @@ import Connections from "./pages/Connections";
 import Analytics from "./pages/Analytics";
 import Messages from "./pages/Messages";
 import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/nearby-matches" element={<NearbyMatches />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/community-guidelines" element={<CommunityGuidelines />} />
