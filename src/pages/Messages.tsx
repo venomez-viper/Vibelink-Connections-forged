@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle } from "lucide-react";
 import Header from "@/components/Header";
@@ -190,12 +190,10 @@ const Messages = () => {
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={conversation.avatar || undefined} />
-                        <AvatarFallback className="text-xl">
-                          {conversation.name[0]}
-                        </AvatarFallback>
-                      </Avatar>
+                      {/* No photos until unlocked — show gradient avatar */}
+                      <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary via-secondary to-pink-400 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-2xl font-bold">{conversation.name[0]}</span>
+                      </div>
                       
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">

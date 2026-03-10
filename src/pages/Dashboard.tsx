@@ -14,6 +14,7 @@ import { User, Heart, MessageCircle, Settings, TrendingUp, MapPin, UserCircle, C
 import { useToast } from "@/hooks/use-toast";
 import ChatWindow from "@/components/ChatWindow";
 import PhotoUpload from "@/components/PhotoUpload";
+import { getPersonalityTraits } from "@/utils/matchingAlgorithm";
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
@@ -400,19 +401,21 @@ const Dashboard = () => {
                     </div>
                   ) : matches.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {matches.map((match) => (
+                      {matches.map((match) => {
+                        const traits = getPersonalityTraits(match.profile?.personality_answers);
+                        return (
                         <Card key={match.matched_user_id} className="hover:shadow-lg transition-shadow">
                           <CardContent className="pt-6 text-center">
-                            <Avatar className="h-20 w-20 mx-auto mb-3 ring-2 ring-primary/20">
-                              <AvatarImage src={match.profile.profile_photo_url} />
-                              <AvatarFallback className="bg-gradient-to-r from-primary to-secondary text-white text-xl">
+                            {/* Personality-first: always show gradient avatar, no photo */}
+                            <div className="h-20 w-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary via-secondary to-pink-400 flex items-center justify-center ring-4 ring-primary/20">
+                              <span className="text-white text-2xl font-bold">
                                 {match.profile.first_name[0]}
-                              </AvatarFallback>
-                            </Avatar>
+                              </span>
+                            </div>
                             <h3 className="font-semibold text-lg mb-1">{match.profile.first_name}, {match.profile.age}</h3>
                             <div className="flex items-center justify-center gap-2 mb-2">
-                              <Badge variant="secondary" className="bg-primary/20">
-                                {match.compatibility_score}% Compatible
+                              <Badge variant="secondary" className="bg-primary/20 text-primary font-semibold">
+                                {match.compatibility_score}% vibe match
                               </Badge>
                             </div>
                             {match.profile.location && (
@@ -421,10 +424,15 @@ const Dashboard = () => {
                                 {match.profile.location}
                               </p>
                             )}
-                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                              {match.profile.tagline || match.profile.bio || "No bio yet"}
-                            </p>
-                            {match.profile.interests?.length > 0 && (
+                            {traits.length > 0 ? (
+                              <div className="flex flex-wrap gap-1 justify-center mb-3">
+                                {traits.map((trait: string, i: number) => (
+                                  <Badge key={i} variant="outline" className="text-xs border-primary/40 text-primary">
+                                    {trait}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : match.profile.interests?.length > 0 ? (
                               <div className="flex flex-wrap gap-1 justify-center mb-3">
                                 {match.profile.interests.slice(0, 3).map((interest: string, i: number) => (
                                   <Badge key={i} variant="outline" className="text-xs">
@@ -432,17 +440,18 @@ const Dashboard = () => {
                                   </Badge>
                                 ))}
                               </div>
-                            )}
-                            <Button 
-                              size="sm" 
+                            ) : null}
+                            <Button
+                              size="sm"
                               className="w-full bg-gradient-to-r from-primary to-secondary"
                               onClick={() => openChat(match)}
                             >
-                              Send Message
+                              Start Chatting
                             </Button>
                           </CardContent>
                         </Card>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="text-center py-12">

@@ -3,13 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, X, Camera, Mic, Smile, StopCircle } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Send, X, Smile, Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { compressImage } from "@/utils/imageCompression";
-import { useVoiceRecording } from "@/hooks/useVoiceRecording";
 
 interface Message {
   id: string;
@@ -33,338 +31,125 @@ interface ChatWindowProps {
   onClose: () => void;
 }
 
+// Mask personal contact details in outgoing messages
+function maskContactDetails(text: string): string {
+  // Phone numbers (various formats)
+  text = text.replace(/(\+?\d[\s\-.]?){7,15}/g, "[📵 phone hidden]");
+  // Email addresses
+  text = text.replace(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g, "[📧 email hidden]");
+  // Social handles: @username or instagram.com, snapchat.com, tiktok.com, etc.
+  text = text.replace(/(instagram|snapchat|tiktok|snap|ig|sc)\s*[:=]?\s*@?[\w.]+/gi, "[🔒 handle hidden]");
+  text = text.replace(/@[\w.]{3,}/g, "[🔒 handle hidden]");
+  // URLs that might carry contact info
+  text = text.replace(/https?:\/\/[^\s]+/g, "[🔗 link hidden]");
+  return text;
+}
+
 const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatWindowProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isOnline, setIsOnline] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [photoUnlockStatus, setPhotoUnlockStatus] = useState<string>("locked");
+  const [unlockRequesting, setUnlockRequesting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
-  const { isRecording, recordingTime, startRecording, stopRecording, cancelRecording } = useVoiceRecording();
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
 
   useEffect(() => {
     loadMessages();
-    const unsubscribeMessages = subscribeToMessages();
-    const unsubscribeTyping = subscribeToTyping();
+    loadConversationStatus();
+    const unsubMessages = subscribeToMessages();
+    const unsubTyping = subscribeToTyping();
     return () => {
-      if (unsubscribeMessages) unsubscribeMessages();
-      if (unsubscribeTyping) unsubscribeTyping();
+      if (unsubMessages) unsubMessages();
+      if (unsubTyping) unsubTyping();
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
   }, [conversationId]);
 
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const loadConversationStatus = async () => {
+    if (!conversationId) return;
+    const { data } = await supabase
+      .from("conversations")
+      .select("photo_unlock_status")
+      .eq("id", conversationId)
+      .maybeSingle();
+    if (data) setPhotoUnlockStatus((data as any).photo_unlock_status || "locked");
+  };
+
   const loadMessages = async () => {
-    if (!conversationId) {
-      console.warn("No conversation ID provided");
-      return;
-    }
-    
-    console.log("Loading messages for conversation:", conversationId);
-    
+    if (!conversationId) return;
     const { data, error } = await supabase
       .from("messages")
       .select("*")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("Error loading messages:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load messages. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    console.log("Loaded", data?.length || 0, "messages");
+    if (error) { console.error("Error loading messages:", error); return; }
     setMessages((data || []) as Message[]);
-
-    // Mark messages as read
     if (data && data.length > 0) {
-      const { error: updateError } = await supabase
-        .from("messages")
-        .update({ read: true })
-        .eq("conversation_id", conversationId)
-        .eq("receiver_id", currentUserId)
-        .eq("read", false);
-      
-      if (updateError) {
-        console.error("Error marking messages as read:", updateError);
-      }
+      await supabase.from("messages").update({ read: true }).eq("conversation_id", conversationId).eq("receiver_id", currentUserId).eq("read", false);
     }
   };
 
   const subscribeToMessages = () => {
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
-    
-    const setupSubscription = () => {
-      const channel = supabase
-        .channel(`messages:${conversationId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "messages",
-            filter: `conversation_id=eq.${conversationId}`,
-          },
-          (payload) => {
-            const newMsg = payload.new as any;
-            setMessages((prev) => {
-              // Prevent duplicates
-              if (prev.some(m => m.id === newMsg.id)) return prev;
-              return [...prev, newMsg as Message];
-            });
-            setIsTyping(false);
-
-            // Mark as read if it's not from current user
-            if (newMsg.receiver_id === currentUserId) {
-              supabase
-                .from("messages")
-                .update({ read: true })
-                .eq("id", newMsg.id)
-                .then(() => {
-                  console.log("Message marked as read");
-                });
-            }
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'CHANNEL_ERROR' && reconnectAttempts < maxReconnectAttempts) {
-            reconnectAttempts++;
-            console.log(`Reconnecting messages channel (attempt ${reconnectAttempts})...`);
-            setTimeout(() => setupSubscription(), 2000 * reconnectAttempts);
-          } else if (status === 'SUBSCRIBED') {
-            reconnectAttempts = 0;
-            console.log('Messages channel connected');
-          }
-        });
-
-      return channel;
-    };
-
-    const channel = setupSubscription();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const channel = supabase
+      .channel(`messages:${conversationId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` }, (payload) => {
+        const newMsg = payload.new as any;
+        setMessages((prev) => prev.some((m) => m.id === newMsg.id) ? prev : [...prev, newMsg as Message]);
+        setIsTyping(false);
+        if (newMsg.receiver_id === currentUserId) {
+          supabase.from("messages").update({ read: true }).eq("id", newMsg.id).then(() => {});
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   };
 
   const subscribeToTyping = () => {
-    let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
-    
-    const setupSubscription = () => {
-      const channel = supabase
-        .channel(`typing:${conversationId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "typing_status",
-            filter: `conversation_id=eq.${conversationId}`,
-          },
-          (payload) => {
-            const typingData = payload.new as any;
-            // Only show typing indicator if it's the other user
-            if (typingData.user_id !== currentUserId) {
-              setIsTyping(typingData.is_typing);
-            }
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'CHANNEL_ERROR' && reconnectAttempts < maxReconnectAttempts) {
-            reconnectAttempts++;
-            console.log(`Reconnecting typing channel (attempt ${reconnectAttempts})...`);
-            setTimeout(() => setupSubscription(), 2000 * reconnectAttempts);
-          } else if (status === 'SUBSCRIBED') {
-            reconnectAttempts = 0;
-            console.log('Typing channel connected');
-          }
-        });
-
-      return channel;
-    };
-
-    const channel = setupSubscription();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const channel = supabase
+      .channel(`typing:${conversationId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "typing_status", filter: `conversation_id=eq.${conversationId}` }, (payload) => {
+        const typingData = payload.new as any;
+        if (typingData.user_id !== currentUserId) setIsTyping(typingData.is_typing);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   };
 
-  const updateTypingStatus = async (isTyping: boolean) => {
-    await supabase
-      .from("typing_status")
-      .upsert({
-        conversation_id: conversationId,
-        user_id: currentUserId,
-        is_typing: isTyping,
-        updated_at: new Date().toISOString(),
-      }, {
-        onConflict: 'conversation_id,user_id'
-      });
+  const updateTypingStatus = async (typing: boolean) => {
+    await supabase.from("typing_status").upsert({ conversation_id: conversationId, user_id: currentUserId, is_typing: typing, updated_at: new Date().toISOString() }, { onConflict: 'conversation_id,user_id' });
   };
 
   const handleTyping = () => {
-    // Clear previous timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Set typing to true
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     updateTypingStatus(true);
-
-    // Set timeout to stop typing after 2 seconds of inactivity
-    typingTimeoutRef.current = setTimeout(() => {
-      updateTypingStatus(false);
-    }, 2000);
+    typingTimeoutRef.current = setTimeout(() => updateTypingStatus(false), 2000);
   };
 
-  const uploadFile = async (file: Blob, folder: 'images' | 'voice'): Promise<string | null> => {
-    try {
-      const fileExt = folder === 'images' ? 'jpg' : 'webm';
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${folder}/${fileName}`;
+  const sendMessage = async (type: 'text' | 'emoji' = 'text') => {
+    if (!newMessage.trim()) return;
+    if (!conversationId) { toast({ title: "Error", description: "No active conversation", variant: "destructive" }); return; }
 
-      const { data, error } = await supabase.storage
-        .from('user-media')
-        .upload(filePath, file, {
-          contentType: folder === 'images' ? 'image/jpeg' : 'audio/webm',
-          upsert: false,
-        });
+    const masked = maskContactDetails(newMessage);
 
-      if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('user-media')
-        .getPublicUrl(data.path);
-
-      return publicUrl;
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to upload file',
-        variant: 'destructive',
-      });
-      return null;
-    }
-  };
-
-  const sendMessage = async (messageType: 'text' | 'image' | 'voice' | 'emoji' = 'text', mediaUrl?: string) => {
-    if (messageType === 'text' && !newMessage.trim()) return;
-    
-    if (!conversationId) {
-      toast({
-        title: "Error",
-        description: "No active conversation",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const messageContent = newMessage || (messageType === 'image' ? '📷 Photo' : messageType === 'voice' ? '🎤 Voice message' : '');
-    
-    console.log("Sending message:", {
+    const { error } = await supabase.from("messages").insert({
       conversation_id: conversationId,
       sender_id: currentUserId,
       receiver_id: otherUser.id,
-      content: messageContent,
-      message_type: messageType,
-      media_url: mediaUrl,
-    });
-
-    const { data, error } = await supabase.from("messages").insert({
-      conversation_id: conversationId,
-      sender_id: currentUserId,
-      receiver_id: otherUser.id,
-      content: messageContent,
-      message_type: messageType,
-      media_url: mediaUrl,
+      content: masked,
+      message_type: type,
     }).select();
 
-    if (error) {
-      console.error("Error sending message:", error);
-      toast({
-        title: "Error",
-        description: `Failed to send message: ${error.message}`,
-        variant: "destructive",
-      });
-      return;
-    }
+    if (error) { toast({ title: "Error", description: `Failed to send message: ${error.message}`, variant: "destructive" }); return; }
 
-    console.log("Message sent successfully!");
     setNewMessage("");
-    
-    // Stop typing indicator
     updateTypingStatus(false);
-  };
-
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: 'Error',
-        description: 'Please select an image file',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      const compressedImage = await compressImage(file);
-      const mediaUrl = await uploadFile(compressedImage, 'images');
-      
-      if (mediaUrl) {
-        await sendMessage('image', mediaUrl);
-      }
-    } catch (error) {
-      console.error('Error uploading photo:', error);
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
-  const handleVoiceRecording = async () => {
-    if (isRecording) {
-      setIsUploading(true);
-      try {
-        const audioBlob = await stopRecording();
-        const mediaUrl = await uploadFile(audioBlob, 'voice');
-        
-        if (mediaUrl) {
-          await sendMessage('voice', mediaUrl);
-        }
-      } catch (error) {
-        console.error('Error sending voice message:', error);
-      } finally {
-        setIsUploading(false);
-      }
-    } else {
-      startRecording();
-    }
   };
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
@@ -372,83 +157,126 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
     setShowEmojiPicker(false);
   };
 
+  // Photo unlock flow
+  const handleRequestUnlock = async () => {
+    setUnlockRequesting(true);
+    try {
+      // Determine which user is user1 vs user2 for status tracking
+      const { data: conv } = await supabase
+        .from("conversations")
+        .select("user1_id, user2_id, photo_unlock_status")
+        .eq("id", conversationId)
+        .maybeSingle();
+
+      if (!conv) return;
+
+      const isUser1 = (conv as any).user1_id === currentUserId;
+      const currentStatus = (conv as any).photo_unlock_status || "locked";
+
+      let newStatus = currentStatus;
+
+      if (currentStatus === "locked") {
+        newStatus = isUser1 ? "user1_requested" : "user2_requested";
+      } else if (
+        (currentStatus === "user1_requested" && !isUser1) ||
+        (currentStatus === "user2_requested" && isUser1)
+      ) {
+        newStatus = "unlocked";
+      }
+
+      await supabase.from("conversations").update({ photo_unlock_status: newStatus } as any).eq("id", conversationId);
+      setPhotoUnlockStatus(newStatus);
+
+      if (newStatus === "unlocked") {
+        toast({ title: "Photos unlocked!", description: "You can now see each other's profile photos." });
+      } else {
+        toast({ title: "Request sent!", description: "Waiting for your match to accept photo sharing." });
+      }
+    } finally {
+      setUnlockRequesting(false);
+    }
+  };
+
+  const isPhotosUnlocked = photoUnlockStatus === "unlocked";
+  const hasRequestedUnlock = photoUnlockStatus !== "locked";
+  const otherRequested =
+    (photoUnlockStatus === "user1_requested") || (photoUnlockStatus === "user2_requested");
+
   return (
     <Card className="fixed bottom-4 right-4 w-96 h-[600px] shadow-2xl z-50 flex flex-col animate-in slide-in-from-bottom-4 duration-300">
-      {/* VibeLink watermark */}
+      {/* Watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.07] z-0 select-none">
         <div className="transform -rotate-45">
-          <span className="text-8xl font-freestyle bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            VibeLink
-          </span>
+          <span className="text-8xl font-freestyle bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">VibeLink</span>
         </div>
       </div>
 
       <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-primary to-secondary text-white rounded-t-lg p-4 relative z-10">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 ring-2 ring-white">
-            <AvatarImage src={otherUser.avatar} />
-            <AvatarFallback className="bg-white text-primary">
-              {otherUser.name[0]}
-            </AvatarFallback>
+            <AvatarFallback className="bg-white text-primary font-bold">{otherUser.name[0]}</AvatarFallback>
           </Avatar>
           <div>
             <CardTitle className="text-white text-lg">{otherUser.name}</CardTitle>
-            {isTyping ? (
-              <p className="text-xs text-white/80">typing...</p>
-            ) : isOnline ? (
-              <p className="text-xs text-white/80">● Online</p>
-            ) : null}
+            {isTyping && <p className="text-xs text-white/80">typing...</p>}
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {!isPhotosUnlocked && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRequestUnlock}
+              disabled={unlockRequesting}
+              className="text-white hover:bg-white/20 text-xs px-2"
+              title="Request photo unlock"
+            >
+              <Camera className="h-4 w-4 mr-1" />
+              {photoUnlockStatus === "locked" ? "Unlock Photos" : "Accept"}
+            </Button>
+          )}
+          {isPhotosUnlocked && (
+            <span className="text-xs text-white/80 flex items-center gap-1">
+              <Camera className="h-3 w-3" /> Photos on
+            </span>
+          )}
+          <Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </CardHeader>
+
+      {/* Photo unlock banner */}
+      {otherRequested && !isPhotosUnlocked && (
+        <div className="bg-primary/10 border-b border-primary/20 px-4 py-2 relative z-10 flex items-center justify-between">
+          <p className="text-xs text-primary font-medium">Your match wants to share photos!</p>
+          <Button size="sm" className="text-xs h-7" onClick={handleRequestUnlock} disabled={unlockRequesting}>
+            Accept
+          </Button>
+        </div>
+      )}
 
       <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
         {messages.map((message) => {
           const isSender = message.sender_id === currentUserId;
           return (
-            <div
-              key={message.id}
-              className={`flex ${isSender ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
-            >
-              <div
-                className={`max-w-[70%] rounded-2xl px-4 py-2 transition-all ${
-                  isSender
-                    ? "bg-gradient-to-r from-primary to-secondary text-white"
-                    : "bg-muted text-foreground"
-                }`}
-              >
-                {message.message_type === 'image' && message.media_url && (
-                  <img 
-                    src={message.media_url} 
-                    alt="Shared photo" 
-                    className="rounded-lg max-w-full h-auto mb-2 cursor-pointer"
-                    onClick={() => window.open(message.media_url, '_blank')}
-                  />
+            <div key={message.id} className={`flex ${isSender ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+              <div className={`max-w-[70%] rounded-2xl px-4 py-2 transition-all ${isSender ? "bg-gradient-to-r from-primary to-secondary text-white" : "bg-muted text-foreground"}`}>
+                {message.message_type === 'image' && message.media_url && isPhotosUnlocked && (
+                  <img src={message.media_url} alt="Shared photo" className="rounded-lg max-w-full h-auto mb-2 cursor-pointer" onClick={() => window.open(message.media_url, '_blank')} />
+                )}
+                {message.message_type === 'image' && message.media_url && !isPhotosUnlocked && (
+                  <div className="rounded-lg bg-muted/50 h-24 flex items-center justify-center mb-2 text-xs text-muted-foreground">🔒 Photo (unlock to view)</div>
                 )}
                 {message.message_type === 'voice' && message.media_url && (
-                  <audio controls className="max-w-full mb-2">
-                    <source src={message.media_url} type="audio/webm" />
-                    Your browser does not support audio playback.
-                  </audio>
+                  <audio controls className="max-w-full mb-2"><source src={message.media_url} type="audio/webm" /></audio>
                 )}
                 <p className="text-sm break-words">{message.content}</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <p
-                    className={`text-xs ${
-                      isSender ? "text-white/70" : "text-muted-foreground"
-                    }`}
-                  >
-                    {new Date(message.created_at).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                  <p className={`text-xs ${isSender ? "text-white/70" : "text-muted-foreground"}`}>
+                    {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </p>
-                  {isSender && message.read && (
-                    <span className="text-xs text-white/70">✓✓</span>
-                  )}
+                  {isSender && message.read && <span className="text-xs text-white/70">✓✓</span>}
                 </div>
               </div>
             </div>
@@ -458,49 +286,10 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
       </CardContent>
 
       <div className="p-4 border-t relative z-10 bg-background">
-        {isRecording && (
-          <div className="mb-2 p-2 bg-destructive/10 rounded-md flex items-center justify-between">
-            <span className="text-sm text-destructive">🎤 Recording: {recordingTime}s</span>
-            <Button variant="ghost" size="sm" onClick={cancelRecording}>
-              Cancel
-            </Button>
-          </div>
-        )}
         <div className="flex gap-2 items-end">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handlePhotoUpload}
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading || isRecording}
-            title="Upload photo"
-          >
-            <Camera className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleVoiceRecording}
-            disabled={isUploading}
-            title={isRecording ? "Stop recording" : "Start voice recording"}
-            className={isRecording ? "text-destructive" : ""}
-          >
-            {isRecording ? <StopCircle className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-          </Button>
           <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
             <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={isUploading || isRecording}
-                title="Emoji picker"
-              >
+              <Button variant="ghost" size="icon" title="Emoji picker">
                 <Smile className="h-5 w-5" />
               </Button>
             </PopoverTrigger>
@@ -510,29 +299,21 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
           </Popover>
           <Input
             value={newMessage}
-            onChange={(e) => {
-              setNewMessage(e.target.value);
-              handleTyping();
-            }}
-            onKeyPress={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-              }
-            }}
+            onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
+            onKeyPress={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
             placeholder="Type a message..."
             className="flex-1"
-            disabled={isUploading || isRecording}
           />
           <Button
             onClick={() => sendMessage()}
-            disabled={!newMessage.trim() || isUploading || isRecording}
+            disabled={!newMessage.trim()}
             className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
             size="icon"
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
+        <p className="text-xs text-muted-foreground mt-1 text-center">Contact details are automatically protected</p>
       </div>
     </Card>
   );

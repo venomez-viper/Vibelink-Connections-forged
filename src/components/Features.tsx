@@ -1,47 +1,35 @@
-import { Brain, Shield, MessageCircle, Search, Lock, Heart, Languages, Sparkles } from "lucide-react";
+import { Brain, MessageCircle, Lock, Camera } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 const features = [
   {
     icon: Brain,
-    title: "AI Compatibility Matchmaking",
-    description: "Smart algorithms that understand your preferences and connect you with compatible matches"
-  },
-  {
-    icon: Shield,
-    title: "Verified Profiles & Photo Authentication",
-    description: "Real people, real connections. Every profile is verified for your safety"
+    emoji: "🧠",
+    title: "Personality Matching",
+    description:
+      "Our weighted algorithm scores compatibility across 7 dimensions — relationship goals, love languages, social battery, values, and more. No swiping, just science.",
   },
   {
     icon: MessageCircle,
-    title: "In-app Chat & Video Calls",
-    description: "Connect instantly with secure messaging and video calls built right in"
-  },
-  {
-    icon: Search,
-    title: "Advanced Search Filters",
-    description: "Find your perfect match by language, interests, values, and lifestyle preferences"
+    emoji: "💬",
+    title: "Text-First Connection",
+    description:
+      "Chat before you see photos. Build genuine chemistry through conversation — the way real connections are made. Looks come second, personality comes first.",
   },
   {
     icon: Lock,
-    title: "Modern Privacy Features",
-    description: "Private browsing and Safe Meet Mode to protect your personal information"
+    emoji: "🔒",
+    title: "Privacy Protection",
+    description:
+      "Phone numbers, emails, and social handles are automatically masked in every message. You control what you share and when — full stop.",
   },
   {
-    icon: Sparkles,
-    title: "Fun Couple Challenges & Icebreakers",
-    description: "Break the ice with engaging activities and conversation starters"
+    icon: Camera,
+    emoji: "📸",
+    title: "Gated Photo Reveal",
+    description:
+      "Photos stay hidden until both of you consent to share them. No awkward appearances — just mutual, intentional moments of connection.",
   },
-  {
-    icon: Languages,
-    title: "Multi-language Support",
-    description: "Connect in your language - full support for multiple languages worldwide"
-  },
-  {
-    icon: Heart,
-    title: "Celebrating Diversity",
-    description: "Embracing all cultures, traditions, and backgrounds from around the world"
-  }
 ];
 
 const Features = () => {
@@ -50,30 +38,29 @@ const Features = () => {
       <div className="container mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Why Choose <span className="text-primary">VibeLink?</span>
+            Why <span className="text-primary">VibeLink</span> is Different
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Discover meaningful connections with features designed for modern dating
+            Built for people who want real connections — not just pretty photos and empty swipes.
           </p>
         </div>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
-              <Card 
+              <Card
                 key={index}
                 className="p-6 hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 bg-card group cursor-pointer"
               >
-                <div className="mb-4 inline-block p-3 bg-primary/10 rounded-xl group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
-                  <Icon className="w-6 h-6 text-primary group-hover:text-white transition-colors" />
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="inline-flex p-3 bg-primary/10 rounded-xl group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
+                    <Icon className="w-6 h-6 text-primary group-hover:text-white transition-colors" />
+                  </div>
+                  <span className="text-2xl">{feature.emoji}</span>
                 </div>
-                <h3 className="text-lg font-semibold text-card-foreground mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {feature.description}
-                </p>
+                <h3 className="text-lg font-semibold text-card-foreground mb-2">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground">{feature.description}</p>
               </Card>
             );
           })}
