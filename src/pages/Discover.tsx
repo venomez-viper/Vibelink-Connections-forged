@@ -7,6 +7,7 @@ import { Heart, X, MapPin, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { motion, useMotionValue, useTransform, useAnimation, PanInfo } from "framer-motion";
 
 interface Profile {
   id: string;
@@ -27,6 +28,15 @@ const Discover = () => {
   const [sending, setSending] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const controls = useAnimation();
+
+  // Motion values for swipe tracking
+  const x = useMotionValue(0);
+  // Rotation tied to how far you drag X
+  const rotate = useTransform(x, [-300, 300], [-15, 15]);
+  // Opacity for the overlays (LIKE/NOPE) depending on drag direction
+  const nopeOpacity = useTransform(x, [-150, -50], [1, 0]);
+  const likeOpacity = useTransform(x, [50, 150], [0, 1]);
 
   useEffect(() => {
     checkAuth();
@@ -81,62 +91,101 @@ const Discover = () => {
     }
   };
 
-  const handleSendRequest = async () => {
-    if (currentIndex >= profiles.length) return;
+  const executeAction = async (direction: 'left' | 'right') => {
+    if (currentIndex >= profiles.length || sending) return;
 
-    setSending(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setSending(false);
-      return;
-    }
-
-    const currentProfile = profiles[currentIndex];
-
-    // Check rate limit: 10 pending requests per hour
-    const { count, error: countError } = await supabase
-      .from('match_requests')
-      .select('*', { count: 'exact', head: true })
-      .eq('sender_id', user.id)
-      .eq('status', 'pending')
-      .gte('created_at', new Date(Date.now() - 3600000).toISOString());
-
-    if (countError) {
-      console.error("Error checking rate limit:", countError);
-    } else if (count && count >= 10) {
-      toast({
-        title: "Limit Reached",
-        description: "You can send 10 match requests per hour. Please wait before sending more.",
-        variant: "destructive",
-      });
-      setSending(false);
-      return;
-    }
-
-    const { error } = await supabase.from("match_requests").insert({
-      sender_id: user.id,
-      receiver_id: currentProfile.user_id,
-      status: "pending",
-    });
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send request",
-        variant: "destructive",
-      });
+    if (direction === 'left') {
+      setCurrentIndex(prev => prev + 1);
+      x.set(0); // reset motion
     } else {
-      toast({
-        title: "Request Sent! ❤️",
-        description: `You sent a match request to ${currentProfile.first_name}`,
+      setSending(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setSending(false);
+        return;
+      }
+
+      const currentProfile = profiles[currentIndex];
+
+      // Check rate limit: 10 pending requests per hour
+      const { count, error: countError } = await supabase
+        .from('match_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('sender_id', user.id)
+        .eq('status', 'pending')
+        .gte('created_at', new Date(Date.now() - 3600000).toISOString());
+
+      if (countError) {
+        console.error("Error checking rate limit:", countError);
+      } else if (count && count >= 10) {
+        toast({
+          title: "Limit Reached",
+          description: "You can send 10 match requests per hour. Please wait before sending more.",
+          variant: "destructive",
+        });
+        setSending(false);
+        // Put card back to center since we failed
+        controls.start({ x: 0, rotate: 0, transition: { type: 'spring', duration: 0.5 } });
+        return;
+      }
+
+      const { error } = await supabase.from("match_requests").insert({
+        sender_id: user.id,
+        receiver_id: currentProfile.user_id,
+        status: "pending",
       });
-      setCurrentIndex(currentIndex + 1);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to send request",
+          variant: "destructive",
+        });
+        controls.start({ x: 0, rotate: 0, transition: { type: 'spring', duration: 0.5 } });
+      } else {
+        toast({
+          title: "Request Sent! ❤️",
+          description: `You sent a match request to ${currentProfile.first_name}`,
+        });
+        setCurrentIndex(prev => prev + 1);
+        x.set(0); // reset motion
+      }
+      setSending(false);
     }
-    setSending(false);
   };
 
-  const handlePass = () => {
-    setCurrentIndex(currentIndex + 1);
+  // Logic triggered when the user lets go of a card they dragged
+  const handleDragEnd = async (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const swipeThreshold = 100; // Drag far enough to count as a swipe
+    const velocityThreshold = 500; // Flick fast enough to count as a swipe
+
+    // Swipe Right
+    if (info.offset.x > swipeThreshold || info.velocity.x > velocityThreshold) {
+      await controls.start({ x: window.innerWidth, transition: { duration: 0.2 } });
+      executeAction('right');
+    }
+    // Swipe Left
+    else if (info.offset.x < -swipeThreshold || info.velocity.x < -velocityThreshold) {
+      await controls.start({ x: -window.innerWidth, transition: { duration: 0.2 } });
+      executeAction('left');
+    }
+    // Snap back
+    else {
+      controls.start({ x: 0, transition: { type: 'spring', stiffness: 300, damping: 20 } });
+    }
+  };
+
+  // Button handlers that trigger the anim programmatic
+  const handlePassBtn = async () => {
+    if (sending || currentIndex >= profiles.length) return;
+    await controls.start({ x: -window.innerWidth, rotate: -15, transition: { duration: 0.3 } });
+    executeAction('left');
+  };
+
+  const handleSendRequestBtn = async () => {
+    if (sending || currentIndex >= profiles.length) return;
+    await controls.start({ x: window.innerWidth, rotate: 15, transition: { duration: 0.3 } });
+    executeAction('right');
   };
 
   if (loading) {
@@ -147,91 +196,172 @@ const Discover = () => {
     );
   }
 
-  const currentProfile = profiles[currentIndex];
+  // To create the 'deck' effect, grab the next 3 profiles.
+  const cardsToRender = profiles.slice(currentIndex, currentIndex + 3).reverse();
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-rose-50 to-red-50">
+    <div className="min-h-screen flex flex-col bg-slate-950 overflow-hidden">
       <Header />
-      
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-8 text-gradient-brand">
-          Discover New Connections
-        </h1>
 
-        {currentProfile ? (
-          <div className="max-w-md mx-auto">
-            <Card className="overflow-hidden shadow-2xl">
-              <div className="relative h-[500px]">
-                <img
-                  src={currentProfile.profile_photo_url || "https://via.placeholder.com/400"}
-                  alt={currentProfile.first_name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white">
-                  <h2 className="text-3xl font-bold mb-1">
-                    {currentProfile.first_name}, {currentProfile.age}
-                  </h2>
-                  {currentProfile.location && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="h-4 w-4" />
-                      <span>{currentProfile.location}</span>
+      <main className="flex-1 max-w-md w-full mx-auto px-4 py-8 flex flex-col relative z-10 pt-24 pb-[80px]">
+        {/* Title removed to maximize swipe area for standard dating app feel */}
+
+        <div className="relative flex-1 flex items-center justify-center w-full">
+          {cardsToRender.length > 0 ? (
+            cardsToRender.map((profile, arrayIndex) => {
+              // Reversed array means arrayIndex 0 is actually the furthest card back.
+              // So active card is arrayIndex === cardsToRender.length - 1
+              const isActiveCard = arrayIndex === cardsToRender.length - 1;
+              const depthIndex = cardsToRender.length - 1 - arrayIndex;
+
+              return (
+                <motion.div
+                  key={profile.user_id}
+                  className="absolute w-full h-[65vh] sm:max-h-[600px] min-h-[450px]"
+                  style={{
+                    x: isActiveCard ? x : 0,
+                    rotate: isActiveCard ? rotate : depthIndex === 1 ? -2 : 2,
+                    scale: isActiveCard ? 1 : 1 - (depthIndex * 0.05),
+                    y: isActiveCard ? 0 : depthIndex * 15, // stack slightly downward
+                    zIndex: cardsToRender.length - depthIndex,
+                    cursor: isActiveCard ? 'grab' : 'auto'
+                  }}
+                  drag={isActiveCard && !sending ? "x" : false}
+                  dragConstraints={{ left: 0, right: 0 }} // Causes the spring-back feel
+                  dragElastic={0.8} // Allows it to be dragged far past 0
+                  onDragEnd={isActiveCard ? handleDragEnd : undefined}
+                  animate={isActiveCard ? controls : undefined}
+                  whileDrag={{ scale: 1.02, cursor: 'grabbing' }}
+                >
+                  <Card className="w-full h-full overflow-hidden shadow-2xl rounded-2xl relative bg-slate-900 border-none select-none">
+
+                    {/* The Background Photo */}
+                    <div className="absolute inset-0 bg-black pointer-events-none">
+                      <img
+                        src={profile.profile_photo_url || "https://via.placeholder.com/400"}
+                        alt={profile.first_name}
+                        className="w-full h-full object-cover"
+                        draggable="false"
+                      />
                     </div>
-                  )}
-                  {currentProfile.tagline && (
-                    <p className="text-sm italic mb-2">&quot;{currentProfile.tagline}&quot;</p>
-                  )}
-                  {currentProfile.compatibility_score && (
-                    <div className="inline-block bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm">
-                      {currentProfile.compatibility_score}% Match
-                    </div>
-                  )}
-                </div>
-              </div>
 
-              <CardContent className="p-6">
-                <p className="text-muted-foreground mb-6">
-                  {currentProfile.bio || "No bio yet"}
-                </p>
+                    {/* Like / Nope Overlay Text */}
+                    {isActiveCard && (
+                      <>
+                        <motion.div
+                          className="absolute top-10 right-10 z-20 pointer-events-none"
+                          style={{ opacity: nopeOpacity }}
+                        >
+                          <div className="border-4 border-red-500 text-red-500 text-4xl font-bold uppercase py-1 px-4 rounded-xl transform rotate-12">
+                            Nope
+                          </div>
+                        </motion.div>
 
-                <div className="flex gap-4 justify-center">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={handlePass}
-                    className="w-20 h-20 rounded-full border-2 hover:border-red-500 hover:text-red-500 hover:bg-red-50"
-                  >
-                    <X className="h-8 w-8" />
-                  </Button>
-                  <Button
-                    size="lg"
-                    onClick={handleSendRequest}
-                    disabled={sending}
-                    className="w-20 h-20 rounded-full text-white" style={{ background: '#C1003A' }}
-                  >
-                    {sending ? (
-                      <Loader2 className="h-8 w-8 animate-spin" />
-                    ) : (
-                      <Heart className="h-8 w-8" />
+                        <motion.div
+                          className="absolute top-10 left-10 z-20 pointer-events-none"
+                          style={{ opacity: likeOpacity }}
+                        >
+                          <div className="border-4 border-green-500 text-green-500 text-4xl font-bold uppercase py-1 px-4 rounded-xl transform -rotate-12">
+                            Like
+                          </div>
+                        </motion.div>
+                      </>
                     )}
-                  </Button>
+
+                    {/* Gradient to make text readable */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+
+                    {/* Profile Information (Bottom text) */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white pointer-events-none">
+                      <h2 className="text-4xl font-bold mb-1 drop-shadow-md">
+                        {profile.first_name}, {profile.age}
+                      </h2>
+
+                      <div className="flex flex-col gap-2 mt-2">
+                        {profile.location && (
+                          <div className="flex items-center gap-2 text-slate-200">
+                            <MapPin className="h-5 w-5 opacity-80" />
+                            <span className="text-lg">{profile.location}</span>
+                          </div>
+                        )}
+
+                        {profile.tagline && (
+                          <div className="text-lg italic text-slate-300 font-medium">"{profile.tagline}"</div>
+                        )}
+
+                        {profile.bio && (
+                          <p className="text-slate-300 mt-2 line-clamp-2 text-sm">
+                            {profile.bio}
+                          </p>
+                        )}
+                      </div>
+
+                      {profile.compatibility_score && (
+                        <div className="mt-4 inline-block bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-semibold border border-white/30">
+                          {profile.compatibility_score}% Vibe Match
+                        </div>
+                      )}
+                    </div>
+
+                  </Card>
+                </motion.div>
+              );
+            })
+          ) : (
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="w-full"
+            >
+              <Card className="max-w-md mx-auto p-12 text-center bg-slate-900 border-slate-800 text-white rounded-2xl shadow-xl">
+                <div className="bg-slate-800/50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Heart className="w-12 h-12 text-slate-600" />
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          <Card className="max-w-md mx-auto p-12 text-center">
-            <h2 className="text-2xl font-bold mb-4">No More Profiles</h2>
-            <p className="text-muted-foreground mb-6">
-              You've seen all available profiles for now. Check back later!
-            </p>
-            <Button onClick={() => navigate("/dashboard")}>
-              Back to Dashboard
+                <h2 className="text-3xl font-bold mb-4">You're All Caught Up</h2>
+                <p className="text-slate-400 mb-8 text-lg">
+                  There's no one new around you.<br />Check back later!
+                </p>
+                <Button
+                  onClick={() => navigate("/dashboard")}
+                  size="lg"
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white border-0"
+                >
+                  Back to Dashboard
+                </Button>
+              </Card>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Swipe Action Buttons */}
+        {cardsToRender.length > 0 && (
+          <div className="flex gap-6 justify-center mt-8 items-center h-[80px]">
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={handlePassBtn}
+              className="w-16 h-16 rounded-full border-2 border-red-500 text-red-500 hover:bg-red-500/10 hover:text-red-400 bg-slate-900/50 backdrop-blur-md transition-transform active:scale-95"
+            >
+              <X className="h-8 w-8" />
             </Button>
-          </Card>
+
+            <Button
+              size="icon"
+              onClick={handleSendRequestBtn}
+              disabled={sending}
+              className="w-20 h-20 rounded-full text-white bg-gradient-to-tr from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 shadow-[0_0_20px_rgba(244,63,94,0.3)] transition-transform active:scale-95 border-0"
+            >
+              {sending ? (
+                <Loader2 className="h-8 w-8 animate-spin" />
+              ) : (
+                <Heart className="h-10 w-10 fill-white" />
+              )}
+            </Button>
+          </div>
         )}
       </main>
 
-      <Footer />
+      {/* <Footer /> - Omit or hide footer on discover for cleaner swipe UI? We can keep it or let it scroll down naturally */}
     </div>
   );
 };
