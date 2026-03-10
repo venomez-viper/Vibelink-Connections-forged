@@ -217,7 +217,7 @@ const Discover = () => {
               return (
                 <motion.div
                   key={profile.user_id}
-                  className="absolute w-full h-[65vh] sm:max-h-[600px] min-h-[450px]"
+                  className="absolute w-full h-[65vh] sm:max-h-[550px]"
                   style={{
                     x: isActiveCard ? x : 0,
                     rotate: isActiveCard ? rotate : depthIndex === 1 ? -2 : 2,
