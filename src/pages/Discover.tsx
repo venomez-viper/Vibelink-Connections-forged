@@ -206,7 +206,7 @@ const Discover = () => {
                     size="lg"
                     onClick={handleSendRequest}
                     disabled={sending}
-                    className="w-20 h-20 rounded-full bg-gradient-to-r bg-[#C1003A] hover:bg-[#8B0028]"
+                    className="w-20 h-20 rounded-full text-white" style={{ background: '#C1003A' }}
                   >
                     {sending ? (
                       <Loader2 className="h-8 w-8 animate-spin" />
