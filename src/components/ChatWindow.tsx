@@ -52,6 +52,8 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [photoUnlockStatus, setPhotoUnlockStatus] = useState<string>("locked");
   const [unlockRequesting, setUnlockRequesting] = useState(false);
+  const [starters, setStarters] = useState<string[]>([]);
+  const [loadingStarters, setLoadingStarters] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
@@ -67,6 +69,34 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
   }, [conversationId]);
+
+  // Load AI starters once messages are known to be empty
+  useEffect(() => {
+    if (messages.length === 0 && conversationId && otherUser.id && !loadingStarters && starters.length === 0) {
+      loadStarters();
+    }
+  }, [messages, conversationId]);
+
+  const loadStarters = async () => {
+    setLoadingStarters(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-conversation-starters", {
+        body: { conversationId, userAId: currentUserId, userBId: otherUser.id },
+      });
+      if (!error && data?.starters?.length) {
+        setStarters(data.starters);
+      }
+    } catch (e) {
+      console.error("Could not load starters:", e);
+    } finally {
+      setLoadingStarters(false);
+    }
+  };
+
+  const useStarter = (starter: string) => {
+    setNewMessage(starter);
+    setStarters([]);
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -257,6 +287,40 @@ const ChatWindow = ({ conversationId, otherUser, currentUserId, onClose }: ChatW
       )}
 
       <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
+        {/* AI Conversation Starters — shown when chat is empty */}
+        {messages.length === 0 && (
+          <div className="space-y-3">
+            <div className="text-center">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                ✨ AI Icebreakers
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Tap one to use it as your opener
+              </p>
+            </div>
+            {loadingStarters ? (
+              <div className="flex justify-center py-4">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
+              </div>
+            ) : (
+              starters.map((starter, i) => (
+                <button
+                  key={i}
+                  onClick={() => useStarter(starter)}
+                  className="w-full text-left p-3 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all text-sm text-foreground leading-relaxed"
+                >
+                  <span className="text-primary mr-2">💬</span>
+                  {starter}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+
         {messages.map((message) => {
           const isSender = message.sender_id === currentUserId;
           return (

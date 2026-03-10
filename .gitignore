@@ -1,3 +1,14 @@
+# Environment variables & secrets — NEVER commit these
+.env
+.env.*
+.env.local
+.env.production
+.env.development
+supabase/.env
+supabase/secrets.toml
+*secrets*
+*api_key*
+
 # Logs
 logs
 *.log
