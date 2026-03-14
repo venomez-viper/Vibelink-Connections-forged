@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Header from "@/components/Header";
-import Footer from "@/components/website/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, X, MapPin, Briefcase, GraduationCap } from "lucide-react";
@@ -153,7 +152,6 @@ const NearbyMatches = () => {
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 };

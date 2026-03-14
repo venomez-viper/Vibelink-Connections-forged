@@ -7,7 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, X, MapPin, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
-import Footer from "@/components/website/Footer";
 import { motion, useMotionValue, useTransform, useAnimation, PanInfo } from "framer-motion";
 
 interface Profile {
@@ -381,7 +380,6 @@ const Discover = () => {
         )}
       </main>
 
-      {/* <Footer /> - Omit or hide footer on discover for cleaner swipe UI? We can keep it or let it scroll down naturally */}
     </div>
   );
 };

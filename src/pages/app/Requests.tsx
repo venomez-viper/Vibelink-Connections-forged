@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Check, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
-import Footer from "@/components/website/Footer";
 
 interface MatchRequest {
   id: string;
@@ -264,7 +263,6 @@ const Requests = () => {
         )}
       </main>
 
-      <Footer />
     </div>
   );
 };

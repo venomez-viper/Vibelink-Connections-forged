@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Heart, MessageCircle, Clock, TrendingUp } from "lucide-react";
 import Header from "@/components/Header";
-import Footer from "@/components/website/Footer";
 
 interface AnalyticsData {
   matchSuccessRate: number;
@@ -304,7 +303,6 @@ const Analytics = () => {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 };

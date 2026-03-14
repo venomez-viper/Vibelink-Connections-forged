@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Upload, Loader2, MapPin, Heart, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
-import Footer from "@/components/website/Footer";
 
 interface Profile {
   id: string;
@@ -213,7 +212,6 @@ const ProfileShowcase = () => {
             </Button>
           </Card>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -351,7 +349,6 @@ const ProfileShowcase = () => {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 };

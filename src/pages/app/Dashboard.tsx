@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
-import Footer from "@/components/website/Footer";
 import FloatingChatButton from "@/components/app/FloatingChatButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -808,7 +807,6 @@ const Dashboard = () => {
         }))}
       />
 
-      <Footer />
     </div>
   );
 };
