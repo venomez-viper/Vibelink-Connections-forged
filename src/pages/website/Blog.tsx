@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Footer from "@/components/website/Footer";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, Clock, ArrowRight } from "lucide-react";

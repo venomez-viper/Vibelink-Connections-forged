@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import FloatingChatButton from "@/components/FloatingChatButton";
+import Footer from "@/components/website/Footer";
+import FloatingChatButton from "@/components/app/FloatingChatButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,8 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, Heart, MessageCircle, Settings, TrendingUp, MapPin, UserCircle, Compass } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
-import ChatWindow from "@/components/ChatWindow";
-import PhotoUpload from "@/components/PhotoUpload";
+import ChatWindow from "@/components/app/ChatWindow";
+import PhotoUpload from "@/components/app/PhotoUpload";
 import { getPersonalityTraits } from "@/utils/matchingAlgorithm";
 
 const Dashboard = () => {

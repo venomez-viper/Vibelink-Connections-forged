@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Check, X, Heart, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Footer from "@/components/website/Footer";
 
 interface Match {
   id: string;

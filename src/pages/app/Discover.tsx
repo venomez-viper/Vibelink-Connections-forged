@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, X, MapPin, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Footer from "@/components/website/Footer";
 import { motion, useMotionValue, useTransform, useAnimation, PanInfo } from "framer-motion";
 
 interface Profile {

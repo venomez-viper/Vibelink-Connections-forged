@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
-import Hero from "@/components/Hero";
-import Features from "@/components/Features";
-import Footer from "@/components/Footer";
+import Hero from "@/components/website/Hero";
+import Features from "@/components/website/Features";
+import Footer from "@/components/website/Footer";
 
 const Index = () => {
   const navigate = useNavigate();

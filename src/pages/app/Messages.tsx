@@ -6,8 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle } from "lucide-react";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import ChatWindow from "@/components/ChatWindow";
+import Footer from "@/components/website/Footer";
+import ChatWindow from "@/components/app/ChatWindow";
 
 interface Conversation {
   id: string;
