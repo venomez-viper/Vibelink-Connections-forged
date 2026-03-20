@@ -6,9 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Check, X, Heart, Clock } from "lucide-react";
+import { Heart, MessageSquare, User, Calendar, MapPin, ChevronRight, Search, MessageCircle, Check, X, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import Header from "@/components/Header";
+import AppHeader from "@/components/app/AppHeader";
+import { motion } from "framer-motion";
 
 interface Match {
   id: string;
@@ -245,8 +246,8 @@ const Connections = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-romantic-50 via-white to-romantic-100">
-        <Header />
+      <div className="min-h-screen app-theme bg-background font-body">
+        <AppHeader />
         <div className="container mx-auto px-4 py-24 flex items-center justify-center">
           <p className="text-muted-foreground">Loading connections...</p>
         </div>
@@ -255,8 +256,8 @@ const Connections = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-romantic-50 via-white to-romantic-100">
-      <Header />
+    <div className="min-h-screen app-theme bg-background font-body">
+      <AppHeader />
 
       <main className="container mx-auto px-4 py-24">
         <div className="max-w-5xl mx-auto">

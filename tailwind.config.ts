@@ -15,6 +15,8 @@ export default {
     extend: {
       fontFamily: {
         'freestyle': ['Freestyle Script', 'cursive'],
+        'display': ['Plus Jakarta Sans', 'sans-serif'],
+        'body': ['Manrope', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -22,6 +24,15 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        surface: "var(--surface)",
+        "surface-container-lowest": "var(--surface-container-lowest)",
+        "surface-container-low": "var(--surface-container-low)",
+        "surface-container": "var(--surface-container)",
+        "surface-container-high": "var(--surface-container-high)",
+        "surface-container-highest": "var(--surface-container-highest)",
+        "surface-variant": "var(--surface-variant)",
+        "primary-container": "var(--primary-container)",
+        "on-surface": "var(--on-surface)",
         romantic: {
           50: "hsl(334, 100%, 97%)",
           100: "hsl(334, 100%, 95%)",

@@ -1,8 +1,9 @@
 import { useState } from "react";
-import Header from "@/components/Header";
+import { useToast } from "@/hooks/use-toast";
+import AppHeader from "@/components/app/AppHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, X, MapPin, Briefcase, GraduationCap } from "lucide-react";
+import { MapPin, Heart, X, Briefcase, GraduationCap, Loader2, Sparkles, Navigation } from "lucide-react";
 
 const mockProfiles = [
   {
@@ -61,7 +62,7 @@ const NearbyMatches = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
+      <AppHeader />
       
       {/* Page Title Section */}
       <section className="pt-40 pb-12 px-4 bg-background">

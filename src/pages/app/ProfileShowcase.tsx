@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, Loader2, MapPin, Heart, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import Header from "@/components/Header";
+import AppHeader from "@/components/app/AppHeader";
 
 interface Profile {
   id: string;
@@ -194,7 +194,7 @@ const ProfileShowcase = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center app-theme bg-background font-body">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -202,8 +202,8 @@ const ProfileShowcase = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 to-purple-50">
-        <Header />
+      <div className="min-h-screen flex flex-col app-theme bg-background font-body">
+        <AppHeader />
         <div className="flex-1 flex items-center justify-center">
           <Card className="p-8 text-center">
             <h2 className="text-2xl font-bold mb-4">Profile Not Found</h2>
@@ -217,8 +217,8 @@ const ProfileShowcase = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 to-purple-50">
-      <Header />
+    <div className="min-h-screen flex flex-col app-theme bg-background font-body">
+      <AppHeader />
       
       <main className="flex-1 container mx-auto px-4 py-8">
         {/* Profile Header */}

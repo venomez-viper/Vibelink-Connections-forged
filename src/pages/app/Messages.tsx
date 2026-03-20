@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle } from "lucide-react";
-import Header from "@/components/Header";
+import AppHeader from "@/components/app/AppHeader";
 import ChatWindow from "@/components/app/ChatWindow";
 
 interface Conversation {
@@ -145,8 +145,8 @@ const Messages = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-romantic-50 via-white to-romantic-100">
-        <Header />
+      <div className="min-h-screen app-theme bg-background font-body">
+        <AppHeader />
         <div className="container mx-auto px-4 py-24 flex items-center justify-center">
           <p className="text-muted-foreground">Loading messages...</p>
         </div>
@@ -155,8 +155,8 @@ const Messages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-romantic-50 via-white to-romantic-100">
-      <Header />
+    <div className="min-h-screen app-theme bg-background font-body">
+      <AppHeader />
       
       <main className="container mx-auto px-4 py-24">
         <div className="max-w-5xl mx-auto">

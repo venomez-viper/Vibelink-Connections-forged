@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "@/components/Header";
+import AppHeader from "@/components/app/AppHeader";
 import FloatingChatButton from "@/components/app/FloatingChatButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -317,8 +317,8 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <Header />
+      <div className="app-theme min-h-screen flex flex-col bg-background font-body">
+        <AppHeader />
         <div className="flex-1 px-4 py-8 mt-20">
           <div className="container mx-auto max-w-6xl">
             {/* Profile Header Skeleton */}
@@ -361,8 +361,8 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+    <div className="app-theme min-h-screen flex flex-col bg-background font-body">
+      <AppHeader />
 
       <div className="flex-1 px-4 py-8 mt-20">
         <div className="container mx-auto max-w-6xl">
@@ -542,17 +542,17 @@ const Dashboard = () => {
                       })}
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                      <div className="h-20 w-20 rounded-full bg-rose-100 flex items-center justify-center mb-6">
-                        <Heart className="h-10 w-10 text-rose-500 animate-pulse" />
+                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-surface-container/50 rounded-xl border border-dashed border-surface-variant">
+                      <div className="h-20 w-20 rounded-full bg-primary/20 flex items-center justify-center mb-6">
+                        <Heart className="h-10 w-10 text-primary animate-pulse" />
                       </div>
-                      <h3 className="text-xl font-bold text-slate-900 mb-2">Find Your Vibe</h3>
-                      <p className="text-slate-500 max-w-sm mb-8 text-sm md:text-base">
+                      <h3 className="text-xl font-bold text-white mb-2">Find Your Vibe</h3>
+                      <p className="text-muted-foreground max-w-sm mb-8 text-sm md:text-base">
                         Your matches will appear here. Start discovering new people to build genuine connections based on personality.
                       </p>
                       <Button
                         size="lg"
-                        className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-lg shadow-rose-200"
+                        className="bg-gradient-to-r from-primary to-primary-container text-primary-foreground hover:from-rose-600 hover:to-pink-600 shadow-lg shadow-rose-200"
                         onClick={() => navigate("/discover")}
                       >
                         Start Discovering
@@ -572,12 +572,12 @@ const Dashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                    <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center mb-6">
-                      <MessageCircle className="h-10 w-10 text-indigo-500" />
+                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-surface-container/50 rounded-xl border border-dashed border-surface-variant">
+                    <div className="h-20 w-20 rounded-full bg-primary/20 flex items-center justify-center mb-6">
+                      <MessageCircle className="h-10 w-10 text-primary" />
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">It's Quiet Here</h3>
-                    <p className="text-slate-500 max-w-sm mb-8 text-sm md:text-base">
+                    <h3 className="text-xl font-bold text-white mb-2">It's Quiet Here</h3>
+                    <p className="text-muted-foreground max-w-sm mb-8 text-sm md:text-base">
                       You haven't started any conversations yet. Send a message to one of your matches to get the ball rolling!
                     </p>
                     <Button
@@ -702,7 +702,7 @@ const Dashboard = () => {
                     {/* Recharts Data Visualizations */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                       {/* Line Chart: Profile Activity Loop */}
-                      <Card className="bg-slate-900 border-none pt-6 pl-2 pr-6 pb-2">
+                      <Card className="bg-card border-none shadow-ambient border-none pt-6 pl-2 pr-6 pb-2">
                         <h4 className="text-white font-semibold text-center mb-4">Profile Activity (Last 7 Days)</h4>
                         <div className="h-48 w-full">
                           <ResponsiveContainer width="100%" height="100%">
@@ -725,7 +725,7 @@ const Dashboard = () => {
                       </Card>
 
                       {/* Radar Chart: Personality Vibe Map */}
-                      <Card className="bg-slate-900 border-none pt-4 pb-4">
+                      <Card className="bg-card border-none shadow-ambient border-none pt-4 pb-4">
                         <h4 className="text-white font-semibold text-center mb-2">Your Vibe Profile</h4>
                         <div className="h-56 w-full">
                           <ResponsiveContainer width="100%" height="100%">

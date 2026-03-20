@@ -2,12 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Heart, X, MapPin, Loader2 } from "lucide-react";
+import { Loader2, Bookmark, Plus, Sparkles, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import Header from "@/components/Header";
-import { motion, useMotionValue, useTransform, useAnimation, PanInfo } from "framer-motion";
+import AppHeader from "@/components/app/AppHeader";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Profile {
   id: string;
@@ -28,15 +27,6 @@ const Discover = () => {
   const [sending, setSending] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const controls = useAnimation();
-
-  // Motion values for swipe tracking
-  const x = useMotionValue(0);
-  // Rotation tied to how far you drag X
-  const rotate = useTransform(x, [-300, 300], [-15, 15]);
-  // Opacity for the overlays (LIKE/NOPE) depending on drag direction
-  const nopeOpacity = useTransform(x, [-150, -50], [1, 0]);
-  const likeOpacity = useTransform(x, [50, 150], [0, 1]);
 
   useEffect(() => {
     checkAuth();
@@ -59,14 +49,12 @@ const Discover = () => {
         .from("matches")
         .select("matched_user_id")
         .eq("user_id", user.id);
-
       const matchedUserIds = matchesData?.map((m) => m.matched_user_id) || [];
 
       const { data: requestsData } = await supabase
         .from("match_requests")
         .select("receiver_id")
         .eq("sender_id", user.id);
-
       const requestedUserIds = requestsData?.map((r) => r.receiver_id) || [];
 
       const excludeIds = [...matchedUserIds, ...requestedUserIds, user.id];
@@ -91,295 +79,278 @@ const Discover = () => {
     }
   };
 
-  const executeAction = async (direction: 'left' | 'right') => {
+  const handleSendVibe = async () => {
     if (currentIndex >= profiles.length || sending) return;
-
-    if (direction === 'left') {
-      setCurrentIndex(prev => prev + 1);
-      x.set(0); // reset motion
-    } else {
-      setSending(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setSending(false);
-        return;
-      }
-
-      const currentProfile = profiles[currentIndex];
-
-      // Check rate limit: 10 pending requests per hour
-      const { count, error: countError } = await supabase
-        .from('match_requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('sender_id', user.id)
-        .eq('status', 'pending')
-        .gte('created_at', new Date(Date.now() - 3600000).toISOString());
-
-      if (countError) {
-        console.error("Error checking rate limit:", countError);
-      } else if (count && count >= 10) {
-        toast({
-          title: "Limit Reached",
-          description: "You can send 10 match requests per hour. Please wait before sending more.",
-          variant: "destructive",
-        });
-        setSending(false);
-        // Put card back to center since we failed
-        controls.start({ x: 0, rotate: 0, transition: { type: 'spring', duration: 0.5 } });
-        return;
-      }
-
-      const { error } = await supabase.from("match_requests").insert({
-        sender_id: user.id,
-        receiver_id: currentProfile.user_id,
-        status: "pending",
-      });
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to send request",
-          variant: "destructive",
-        });
-        controls.start({ x: 0, rotate: 0, transition: { type: 'spring', duration: 0.5 } });
-      } else {
-        toast({
-          title: "Request Sent! ❤️",
-          description: `You sent a match request to ${currentProfile.first_name}`,
-        });
-        setCurrentIndex(prev => prev + 1);
-        x.set(0); // reset motion
-      }
+    
+    setSending(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
       setSending(false);
+      return;
     }
-  };
 
-  // Logic triggered when the user lets go of a card they dragged
-  const handleDragEnd = async (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const swipeThreshold = 100; // Drag far enough to count as a swipe
-    const velocityThreshold = 500; // Flick fast enough to count as a swipe
+    const currentProfile = profiles[currentIndex];
 
-    // Swipe Right
-    if (info.offset.x > swipeThreshold || info.velocity.x > velocityThreshold) {
-      await controls.start({ x: window.innerWidth, transition: { duration: 0.2 } });
-      executeAction('right');
+    // Check rate limit: 10 pending requests per hour
+    const { count, error: countError } = await supabase
+      .from('match_requests')
+      .select('*', { count: 'exact', head: true })
+      .eq('sender_id', user.id)
+      .eq('status', 'pending')
+      .gte('created_at', new Date(Date.now() - 3600000).toISOString());
+
+    if (countError) {
+      console.error("Error checking rate limit:", countError);
+    } else if (count && count >= 10) {
+      toast({
+        title: "Limit Reached",
+        description: "You can send 10 match requests per hour. Please wait before sending more.",
+        variant: "destructive",
+      });
+      setSending(false);
+      return;
     }
-    // Swipe Left
-    else if (info.offset.x < -swipeThreshold || info.velocity.x < -velocityThreshold) {
-      await controls.start({ x: -window.innerWidth, transition: { duration: 0.2 } });
-      executeAction('left');
-    }
-    // Snap back
-    else {
-      controls.start({ x: 0, transition: { type: 'spring', stiffness: 300, damping: 20 } });
-    }
-  };
 
-  // Button handlers that trigger the anim programmatic
-  const handlePassBtn = async () => {
-    if (sending || currentIndex >= profiles.length) return;
-    await controls.start({ x: -window.innerWidth, rotate: -15, transition: { duration: 0.3 } });
-    executeAction('left');
-  };
+    const { error } = await supabase.from("match_requests").insert({
+      sender_id: user.id,
+      receiver_id: currentProfile.user_id,
+      status: "pending",
+    });
 
-  const handleSendRequestBtn = async () => {
-    if (sending || currentIndex >= profiles.length) return;
-    await controls.start({ x: window.innerWidth, rotate: 15, transition: { duration: 0.3 } });
-    executeAction('right');
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send vibe",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Vibe Sent! 💫",
+        description: `You sent a match request to ${currentProfile.first_name}`,
+      });
+      // Move to next profile
+      setCurrentIndex(prev => prev + 1);
+    }
+    setSending(false);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-950 overflow-hidden">
-        <Header />
-        <main className="flex-1 max-w-md w-full mx-auto px-4 py-8 flex flex-col relative z-10 pt-24 pb-[80px]">
-          <div className="relative flex-1 flex items-center justify-center w-full">
-            <div className="absolute w-full h-[65vh] sm:max-h-[550px]" style={{ zIndex: 3 }}>
-              <Skeleton className="w-full h-full rounded-2xl bg-slate-900/80 shadow-2xl" />
+      <div className="min-h-screen bg-background app-theme font-body">
+        <AppHeader />
+        <main className="container mx-auto px-4 md:px-8 py-12 pb-[80px]">
+          <Skeleton className="w-64 h-8 mb-2 bg-surface-container border-0" />
+          <Skeleton className="w-96 h-12 mb-12 bg-surface-container border-0" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-8 flex gap-8 bg-surface-container rounded-[32px] p-8 h-[500px] border-0">
+              <Skeleton className="w-1/2 h-full rounded-2xl bg-surface-container-high border-0" />
+              <div className="w-1/2 flex flex-col gap-4">
+                <Skeleton className="w-48 h-10 bg-surface-container-high border-0" />
+                <Skeleton className="w-full h-24 bg-surface-container-high border-0" />
+              </div>
             </div>
-            <div className="absolute w-full h-[65vh] sm:max-h-[550px]" style={{ transform: 'scale(0.95) translateY(15px) rotate(-2deg)', zIndex: 2 }}>
-              <Skeleton className="w-full h-full rounded-2xl bg-slate-800/50" />
+            <div className="lg:col-span-4 flex flex-col gap-4 border-0">
+              <Skeleton className="w-full h-32 rounded-2xl bg-surface-container border-0" />
+              <Skeleton className="w-full h-32 rounded-2xl bg-surface-container border-0" />
             </div>
-            <div className="absolute w-full h-[65vh] sm:max-h-[550px]" style={{ transform: 'scale(0.9) translateY(30px) rotate(2deg)', zIndex: 1 }}>
-              <Skeleton className="w-full h-full rounded-2xl bg-slate-800/30" />
-            </div>
-          </div>
-          <div className="flex gap-6 justify-center mt-8 items-center h-[80px]">
-            <Skeleton className="w-16 h-16 rounded-full bg-slate-800" />
-            <Skeleton className="w-20 h-20 rounded-full bg-slate-800" />
           </div>
         </main>
       </div>
     );
   }
 
-  // To create the 'deck' effect, grab the next 3 profiles.
-  const cardsToRender = profiles.slice(currentIndex, currentIndex + 3).reverse();
+  const currentProfile = profiles[currentIndex];
+  // Next 3 profiles in the queue
+  const queueProfiles = profiles.slice(currentIndex + 1, currentIndex + 4);
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 overflow-hidden">
-      <div className="shrink-0 z-50">
-        <Header />
-      </div>
+    <div className="min-h-screen app-theme bg-background font-body text-white selection:bg-primary/30">
+      <AppHeader />
 
-      <main className="flex-1 max-w-md w-full mx-auto px-4 flex flex-col relative z-10 pt-4 pb-8 overflow-hidden">
-        {/* Title removed to maximize swipe area for standard dating app feel */}
-
-        <div className="flex-1 w-full relative">
-          {cardsToRender.length > 0 ? (
-            cardsToRender.map((profile, arrayIndex) => {
-              // Reversed array means arrayIndex 0 is actually the furthest card back.
-              // So active card is arrayIndex === cardsToRender.length - 1
-              const isActiveCard = arrayIndex === cardsToRender.length - 1;
-              const depthIndex = cardsToRender.length - 1 - arrayIndex;
-
-              return (
-                <motion.div
-                  key={profile.user_id}
-                  className="absolute inset-0 pb-4" // pb-4 adds a little breathing room at the bottom of the container
-                  style={{
-                    x: isActiveCard ? x : 0,
-                    rotate: isActiveCard ? rotate : depthIndex === 1 ? -2 : 2,
-                    scale: isActiveCard ? 1 : 1 - (depthIndex * 0.05),
-                    y: isActiveCard ? 0 : depthIndex * 15, // stack slightly downward
-                    zIndex: cardsToRender.length - depthIndex,
-                    cursor: isActiveCard ? 'grab' : 'auto'
-                  }}
-                  drag={isActiveCard && !sending ? "x" : false}
-                  dragConstraints={{ left: 0, right: 0 }} // Causes the spring-back feel
-                  dragElastic={0.8} // Allows it to be dragged far past 0
-                  onDragEnd={isActiveCard ? handleDragEnd : undefined}
-                  animate={isActiveCard ? controls : undefined}
-                  whileDrag={{ scale: 1.02, cursor: 'grabbing' }}
-                >
-                  <Card className="w-full h-full overflow-hidden shadow-2xl rounded-2xl relative bg-slate-900 border-none select-none">
-
-                    {/* The Background Photo */}
-                    <div className="absolute inset-0 bg-black pointer-events-none">
-                      <img
-                        src={profile.profile_photo_url || "https://via.placeholder.com/400"}
-                        alt={profile.first_name}
-                        className="w-full h-full object-cover"
-                        draggable="false"
-                      />
-                    </div>
-
-                    {/* Like / Nope Overlay Text */}
-                    {isActiveCard && (
-                      <>
-                        <motion.div
-                          className="absolute top-10 right-10 z-20 pointer-events-none"
-                          style={{ opacity: nopeOpacity }}
-                        >
-                          <div className="border-4 border-red-500 text-red-500 text-4xl font-bold uppercase py-1 px-4 rounded-xl transform rotate-12">
-                            Nope
-                          </div>
-                        </motion.div>
-
-                        <motion.div
-                          className="absolute top-10 left-10 z-20 pointer-events-none"
-                          style={{ opacity: likeOpacity }}
-                        >
-                          <div className="border-4 border-green-500 text-green-500 text-4xl font-bold uppercase py-1 px-4 rounded-xl transform -rotate-12">
-                            Like
-                          </div>
-                        </motion.div>
-                      </>
-                    )}
-
-                    {/* Gradient to make text readable */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
-
-                    {/* Profile Information (Bottom text) */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white pointer-events-none">
-                      <h2 className="text-3xl sm:text-4xl font-bold mb-1 drop-shadow-md truncate">
-                        {profile.first_name}, {profile.age}
-                      </h2>
-
-                      <div className="flex flex-col gap-1 sm:gap-2 mt-2">
-                        {profile.location && (
-                          <div className="flex items-center gap-2 text-slate-200">
-                            <MapPin className="h-4 w-4 sm:h-5 sm:w-5 opacity-80 shrink-0" />
-                            <span className="text-base sm:text-lg truncate">{profile.location}</span>
-                          </div>
-                        )}
-
-                        {profile.tagline && (
-                          <div className="text-base sm:text-lg italic text-slate-300 font-medium line-clamp-1">"{profile.tagline}"</div>
-                        )}
-
-                        {profile.bio && (
-                          <p className="text-slate-300 mt-1 sm:mt-2 line-clamp-2 text-xs sm:text-sm">
-                            {profile.bio}
-                          </p>
-                        )}
-                      </div>
-
-                      {profile.compatibility_score && (
-                        <div className="mt-3 sm:mt-4 inline-block bg-white/20 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold border border-white/30">
-                          {profile.compatibility_score}% Vibe Match
-                        </div>
-                      )}
-                    </div>
-
-                  </Card>
-                </motion.div>
-              );
-            })
-          ) : (
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="w-full h-full flex items-center justify-center"
-            >
-              <Card className="w-full p-8 sm:p-12 text-center bg-slate-900 border-slate-800 text-white rounded-2xl shadow-xl">
-                <div className="bg-slate-800/50 w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Heart className="w-10 h-10 sm:w-12 sm:h-12 text-slate-600" />
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-4">You're All Caught Up</h2>
-                <p className="text-slate-400 mb-8 text-base sm:text-lg">
-                  There's no one new around you.<br />Check back later!
-                </p>
-                <Button
-                  onClick={() => navigate("/dashboard")}
-                  size="lg"
-                  className="w-full bg-slate-800 hover:bg-slate-700 text-white border-0"
-                >
-                  Back to Dashboard
-                </Button>
-              </Card>
-            </motion.div>
-          )}
+      <main className="container mx-auto px-4 md:px-8 pt-6 pb-24">
+        
+        {/* Title Section */}
+        <div className="mb-10">
+          <h3 className="font-freestyle text-[#FF4D6D] text-3xl md:text-4xl mb-2 drop-shadow-sm">Curated for your soul</h3>
+          <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-black font-display tracking-tight">
+            Discover <span className="text-primary">Synchronicity</span>
+          </h1>
         </div>
 
-        {/* Swipe Action Buttons */}
-        {cardsToRender.length > 0 && (
-          <div className="shrink-0 flex gap-6 justify-center items-center mt-4">
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={handlePassBtn}
-              className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-red-500 text-red-500 hover:bg-red-500/10 hover:text-red-400 bg-slate-900/50 backdrop-blur-md transition-transform active:scale-95 z-20"
-            >
-              <X className="h-6 w-6 sm:h-8 sm:w-8" />
-            </Button>
+        {currentProfile ? (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            
+            {/* Main Featured Profile */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentProfile.user_id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="lg:col-span-8 bg-surface-container rounded-[40px] p-6 lg:p-8 flex flex-col md:flex-row gap-8 relative overflow-hidden ghost-border"
+              >
+                {/* Left side: Photo & Score */}
+                <div className="w-full md:w-[45%] relative aspect-[3/4] md:aspect-auto md:h-[480px] rounded-3xl overflow-hidden shadow-ambient group">
+                  <img
+                    src={currentProfile.profile_photo_url || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80"}
+                    alt={currentProfile.first_name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-between p-6">
+                    <div className="flex justify-center flex-1 items-center">
+                      <div className="w-28 h-28 lg:w-32 lg:h-32 rounded-full border border-white/20 bg-black/40 backdrop-blur-md flex items-center justify-center shadow-2xl">
+                        <span className="text-3xl lg:text-4xl font-bold text-white tracking-tighter">
+                          {currentProfile.compatibility_score || 94}%
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-freestyle text-2xl text-white/90">The Architect</h4>
+                      <p className="text-[10px] tracking-[0.2em] font-bold text-white/50 uppercase">Personality Archetype</p>
+                    </div>
+                  </div>
+                </div>
 
-            <Button
-              size="icon"
-              onClick={handleSendRequestBtn}
-              disabled={sending}
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full text-white bg-gradient-to-tr from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 shadow-[0_0_20px_rgba(244,63,94,0.3)] transition-transform active:scale-95 border-0 z-20"
-            >
-              {sending ? (
-                <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin" />
-              ) : (
-                <Heart className="h-8 w-8 sm:h-10 sm:w-10 fill-white" />
+                {/* Right side: Details */}
+                <div className="w-full md:w-[55%] flex flex-col justify-center py-4 pr-4">
+                  <h2 className="text-4xl lg:text-5xl font-bold font-display tracking-tight mb-6">
+                    {currentProfile.first_name}, {currentProfile.age}
+                  </h2>
+                  
+                  {/* Mocked/Derived Tags mapped to UI */}
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    <span className="px-4 py-1.5 rounded-full bg-surface-container-high text-xs font-semibold text-slate-200 ghost-border">
+                      Both Introverted
+                    </span>
+                    <span className="px-4 py-1.5 rounded-full bg-surface-container-high text-xs font-semibold text-slate-200 ghost-border">
+                      Night Owls
+                    </span>
+                    {currentProfile.location && (
+                      <span className="px-4 py-1.5 rounded-full bg-surface-container-high text-xs font-semibold text-slate-200 ghost-border truncate max-w-[150px]">
+                        {currentProfile.location}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-muted-foreground text-sm lg:text-base leading-relaxed mb-8 flex-1">
+                    {currentProfile.bio || "Seeking the kind of connection that exists in the spaces between words. I find peace in rainy Tuesday afternoons and high-fidelity soundscapes."}
+                  </p>
+
+                  <div className="flex gap-4 items-center">
+                    <Button 
+                      onClick={handleSendVibe}
+                      disabled={sending}
+                      className="flex-1 rounded-full bg-gradient-to-r from-primary to-[#ff7b93] hover:from-[#ff3a5ebf] hover:to-[#ff7b93] text-white py-6 text-base font-bold shadow-ambient transition-all hover:scale-[1.02] active:scale-95 border-none"
+                    >
+                      {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send Vibe"}
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="w-14 h-14 rounded-full bg-surface-container-high hover:bg-surface-container-highest border-white/5 text-white shrink-0 hover:scale-105 active:scale-95 transition-all"
+                    >
+                      <Bookmark className="w-5 h-5 fill-white/20" />
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Queue Side (Right Sidebar) */}
+            <div className="lg:col-span-4 flex flex-col gap-4">
+              {queueProfiles.map((qp, idx) => (
+                <div 
+                  key={qp.user_id} 
+                  className="bg-surface-container rounded-3xl p-5 md:p-6 cursor-pointer hover:bg-surface-container-high transition-colors ghost-border flex items-center justify-between group"
+                  onClick={() => setCurrentIndex(currentIndex + 1 + idx)}
+                >
+                  <div className="flex gap-4 items-center w-full">
+                    {/* Small Avatar bubble */}
+                    <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border border-white/10 relative">
+                       <img src={qp.profile_photo_url || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80`} alt={qp.first_name} className="w-full h-full object-cover" />
+                       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline mb-1">
+                        <h3 className="font-bold text-lg lg:text-xl truncate text-white">
+                          {qp.first_name}, {qp.age}
+                        </h3>
+                        {/* Fake derived scores descending */}
+                        <div className="text-right shrink-0 ml-2">
+                           <span className="text-lg lg:text-xl font-bold block leading-none text-white">{qp.compatibility_score || 88 - (idx * 6)}%</span>
+                           <span className="text-[8px] uppercase tracking-wider text-white/40 block mt-1">Compatibility</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground italic font-medium truncate">
+                        "{qp.tagline || 'Similar Life Goals & Shared Values'}"
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-primary transition-colors ml-2 shrink-0" />
+                </div>
+              ))}
+
+              {/* Refine Your Vibe button */}
+              {queueProfiles.length > 0 && (
+                <button 
+                  className="w-full mt-2 rounded-[32px] border-2 border-dashed border-surface-variant hover:border-primary/50 bg-transparent hover:bg-surface-container p-6 flex flex-col items-center justify-center gap-2 transition-all group"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Plus className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs tracking-widest uppercase font-bold text-muted-foreground group-hover:text-white transition-colors">
+                    Refine Your Vibe
+                  </span>
+                </button>
               )}
-            </Button>
+            </div>
+
+          </div>
+        ) : (
+          <div className="w-full max-w-2xl mx-auto mt-20 text-center">
+            <div className="bg-surface-container rounded-[40px] p-12 ghost-border shadow-ambient">
+              <div className="w-24 h-24 rounded-full bg-surface-container-high flex items-center justify-center mx-auto mb-8 relative">
+                 <Sparkles className="w-10 h-10 text-primary animate-pulse" />
+                 <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-ping" style={{ animationDuration: '3s' }} />
+              </div>
+              <h2 className="text-3xl lg:text-4xl font-bold font-display mb-4">You're All Caught Up</h2>
+              <p className="text-muted-foreground mb-10 text-lg max-w-md mx-auto">
+                The universe is still orchestrating your next great connections. Check back later to discover new souls.
+              </p>
+              <Button
+                onClick={() => navigate("/dashboard")}
+                className="rounded-full px-8 py-6 text-base font-bold bg-white text-[#200e14] hover:bg-white/90"
+              >
+                Back to Dashboard
+              </Button>
+            </div>
           </div>
         )}
-      </main>
 
+        {/* Footer Info Section (A Note on Compatibility) */}
+        {currentProfile && (
+          <div className="mt-20 lg:mt-32 max-w-5xl">
+             <div className="flex flex-col md:flex-row gap-12 items-center">
+                <div className="flex-1">
+                   <h4 className="font-freestyle text-primary/80 text-2xl mb-2">A Note on Compatibility</h4>
+                   <h2 className="text-3xl md:text-4xl font-bold font-display mb-6">Why Vibelink hides the visual.</h2>
+                   <p className="text-muted-foreground text-sm lg:text-base leading-relaxed mb-8 max-w-lg">
+                     Connections built on shared values and personality archetypes last 3x longer than those built on visual first impressions. We prioritize your essence, revealing the person behind the vibe only when the spark is mutual.
+                   </p>
+                   <Button variant="outline" className="rounded-full border-white/20 hover:bg-white/10 text-white ghost-border">
+                     Learn about Soul-Mapping
+                   </Button>
+                </div>
+                <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-full bg-surface-container shrink-0 flex items-center justify-center relative ghost-border shadow-ambient mx-auto md:mx-0">
+                   <Sparkles className="w-12 h-12 text-primary/40" />
+                </div>
+             </div>
+          </div>
+        )}
+
+      </main>
     </div>
   );
 };

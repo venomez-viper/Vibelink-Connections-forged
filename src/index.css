@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -152,4 +153,68 @@ All colors MUST be HSL.
       min-width: 44px;
     }
   }
+}
+
+.app-theme {
+  --primary-container: #c1003a;
+  --surface: #200e14;
+  --on-surface: #ffffff;
+  --surface-container-lowest: #251218;
+  --surface-container-low: #2b151c;
+  --surface-container: #301820;
+  --surface-container-high: #381c25;
+  --surface-container-highest: #4a2531;
+  --surface-variant: rgba(255, 255, 255, 0.05);
+  --gradient-app-primary: linear-gradient(135deg, hsl(345, 100%, 38%), #c1003a);
+  --shadow-ambient: 0 8px 32px rgba(193, 0, 58, 0.08);
+  font-family: 'Manrope', sans-serif;
+  color: var(--on-surface);
+  background-color: var(--surface);
+
+  /* Override Shadcn UI Variables for Dark Editorial Mode */
+  --background: 334 40% 8%; /* fallback surface */
+  --foreground: 0 0% 100%;
+  --card: 334 40% 12%; /* maps roughly to surface-container-low */
+  --card-foreground: 0 0% 100%;
+  --popover: 334 40% 12%;
+  --popover-foreground: 0 0% 100%;
+  --muted: 334 40% 15%;
+  --muted-foreground: 334 20% 70%;
+  --accent: 334 40% 18%;
+  --accent-foreground: 0 0% 100%;
+  --border: 334 40% 18%; /* subtle ghost borders */
+  --input: 334 40% 18%;
+}
+
+.app-theme .glass-panel {
+  background-color: var(--surface-variant);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.app-theme .ghost-border {
+  outline: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.app-theme .shadow-ambient {
+  box-shadow: var(--shadow-ambient);
+}
+
+/* Foolproof Shadcn Component Overwrites */
+.app-theme .bg-card, .app-theme .bg-popover {
+  background-color: var(--surface-container-low) !important;
+  color: var(--on-surface) !important;
+  border-color: var(--surface-variant) !important;
+}
+
+.app-theme .text-card-foreground, .app-theme .text-popover-foreground {
+  color: var(--on-surface) !important;
+}
+
+.app-theme .text-slate-900, .app-theme .text-slate-800 {
+  color: #ffffff !important;
+}
+
+.app-theme .bg-slate-50, .app-theme .bg-white {
+  background-color: var(--surface-container) !important;
 }
