@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/Header";
+import AppHeader from "@/components/app/AppHeader";
 import Hero from "@/components/website/Hero";
 import Features from "@/components/website/Features";
 import Footer from "@/components/website/Footer";
@@ -16,8 +16,8 @@ const Index = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen">
-      <Header />
+    <div className="app-theme min-h-screen">
+      <AppHeader />
       <Hero />
       <Features />
       <Footer />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "@/components/Header";
+import AppHeader from "@/components/app/AppHeader";
 import Footer from "@/components/website/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,8 +89,8 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+    <div className="app-theme min-h-screen flex flex-col bg-background">
+      <AppHeader />
       
       <div className="flex-1 flex items-center justify-center px-4 py-8 mt-20">
         <div className="container mx-auto max-w-md">
