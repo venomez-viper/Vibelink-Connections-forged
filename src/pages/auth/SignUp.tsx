@@ -279,7 +279,7 @@ const SignUp = () => {
   );
 
   return (
-    <div className="app-theme min-h-screen flex flex-col bg-background">
+    <div className="app-theme min-h-screen flex flex-col animated-auth-bg">
       <AppHeader />
 
       <div className="flex-1 flex items-center justify-center px-4 py-8 mt-20">

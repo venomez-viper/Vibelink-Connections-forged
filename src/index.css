@@ -218,3 +218,404 @@ All colors MUST be HSL.
 .app-theme .bg-slate-50, .app-theme .bg-white {
   background-color: var(--surface-container) !important;
 }
+
+/* ============================================================
+   Animated Sign-In Component Styles
+   Colors derived from VibeLink design system CSS variables:
+     Primary (brand pink):  hsl(345, 100%, 38%)
+     Dark surface:          hsl(334, 40%, 8%)
+     Dark card:             hsl(334, 40%, 12%)  →  rgb(43, 21, 28)
+     Light bg:              hsl(334, 100%, 97%)
+     Foreground dark:       hsl(334, 78%, 20%)
+     Muted text:            hsl(334, 20%, 50%)
+   ============================================================ */
+
+/* --- Layout --- */
+.login-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'Manrope', sans-serif;
+}
+
+.login-container.light {
+  background: linear-gradient(135deg, hsl(334, 100%, 97%) 0%, hsl(334, 60%, 93%) 100%);
+  color: hsl(334, 78%, 20%);
+}
+
+.login-container.dark {
+  background: hsl(334, 40%, 8%);
+  color: hsl(334, 30%, 95%);
+}
+
+/* --- Particles Canvas --- */
+.particles-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- Theme Toggle --- */
+.theme-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 50;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.login-container.light .theme-toggle {
+  background: hsla(345, 100%, 38%, 0.1);
+  color: hsl(345, 100%, 38%);
+  border: 1px solid hsla(345, 100%, 38%, 0.2);
+}
+
+.login-container.dark .theme-toggle {
+  background: rgba(255, 255, 255, 0.08);
+  color: hsl(334, 30%, 90%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* --- Card --- */
+.login-card {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 420px;
+  margin: 2rem 1rem;
+  border-radius: 1.5rem;
+  overflow: hidden;
+}
+
+.login-container.light .login-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 40px hsla(345, 100%, 38%, 0.15), 0 2px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid hsla(334, 30%, 90%, 0.8);
+}
+
+.login-container.dark .login-card {
+  background: rgba(43, 21, 28, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.login-card-inner {
+  padding: 2.5rem;
+}
+
+/* --- Header --- */
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.login-container.light .login-header h1 { color: hsl(334, 78%, 20%); }
+.login-container.dark  .login-header h1 { color: hsl(334, 30%, 95%); }
+
+.login-header p { font-size: 0.875rem; }
+.login-container.light .login-header p { color: hsl(334, 20%, 50%); }
+.login-container.dark  .login-header p { color: hsl(334, 20%, 70%); }
+
+/* --- Auth Error Banner --- */
+.login-auth-error {
+  margin-bottom: 1rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  text-align: center;
+  background: hsla(0, 84%, 60%, 0.12);
+  border: 1px solid hsla(0, 84%, 60%, 0.3);
+  color: hsl(0, 72%, 50%);
+}
+
+/* --- Form --- */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-field {
+  position: relative;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 1.1rem 1rem 0.5rem;
+  border-radius: 0.75rem;
+  border: 1.5px solid;
+  font-size: 0.925rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: 'Manrope', sans-serif;
+  box-sizing: border-box;
+}
+
+.login-container.light .form-field input {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: hsl(334, 30%, 88%);
+  color: hsl(334, 78%, 20%);
+}
+
+.login-container.dark .form-field input {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: hsl(334, 30%, 95%);
+}
+
+.form-field label {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  pointer-events: none;
+  transition: top 0.2s ease, transform 0.2s ease, font-size 0.2s ease;
+}
+
+.login-container.light .form-field label { color: hsl(334, 20%, 50%); }
+.login-container.dark  .form-field label { color: hsl(334, 20%, 65%); }
+
+.form-field.active label {
+  top: 0.55rem;
+  transform: translateY(0);
+  font-size: 0.7rem;
+}
+
+.login-container.light .form-field.active label { color: hsl(345, 100%, 38%); }
+.login-container.dark  .form-field.active label { color: hsl(345, 100%, 60%); }
+
+.form-field input:focus {
+  border-color: hsl(345, 100%, 38%);
+  box-shadow: 0 0 0 3px hsla(345, 100%, 38%, 0.15);
+}
+
+.form-field.invalid input { border-color: hsl(0, 84%, 60%); }
+
+.error-message {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 0.3rem;
+  color: hsl(0, 84%, 60%);
+}
+
+/* --- Password Toggle --- */
+.toggle-password {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.login-container.light .toggle-password { color: hsl(334, 20%, 50%); }
+.login-container.dark  .toggle-password { color: hsl(334, 20%, 65%); }
+.toggle-password:hover { color: hsl(345, 100%, 38%); }
+
+/* --- Form Options (remember me + forgot password) --- */
+.form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  user-select: none;
+}
+
+.remember-me input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: hsl(345, 100%, 38%);
+  cursor: pointer;
+}
+
+.checkmark { display: none; }
+
+.forgot-password {
+  font-size: 0.85rem;
+  text-decoration: none;
+  color: hsl(345, 100%, 38%);
+  transition: opacity 0.2s ease;
+}
+
+.forgot-password:hover {
+  opacity: 0.75;
+  text-decoration: underline;
+}
+
+/* --- Submit Button --- */
+.login-button {
+  width: 100%;
+  padding: 0.875rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  font-family: 'Manrope', sans-serif;
+  background: linear-gradient(135deg, hsl(345, 100%, 38%), hsl(345, 90%, 22%));
+  color: #ffffff;
+  box-shadow: 0 4px 15px hsla(345, 100%, 38%, 0.35);
+}
+
+.login-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px hsla(345, 100%, 38%, 0.5);
+}
+
+.login-button:active:not(:disabled) { transform: translateY(0); }
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-form.form-success .login-button {
+  background: linear-gradient(135deg, hsl(142, 70%, 40%), hsl(142, 60%, 30%));
+}
+
+/* --- Separator --- */
+.separator {
+  position: relative;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.separator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+.login-container.light .separator::before { background: hsl(334, 30%, 88%); }
+.login-container.dark  .separator::before { background: rgba(255, 255, 255, 0.1); }
+
+.separator span {
+  position: relative;
+  padding: 0 0.75rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.login-container.light .separator span {
+  background: rgba(255, 255, 255, 0.88);
+  color: hsl(334, 20%, 50%);
+}
+
+.login-container.dark .separator span {
+  background: rgba(43, 21, 28, 0.88);
+  color: hsl(334, 20%, 65%);
+}
+
+/* --- Social Buttons --- */
+.social-login {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.social-button {
+  flex: 1;
+  padding: 0.625rem;
+  border-radius: 0.75rem;
+  border: 1.5px solid;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-container.light .social-button {
+  border-color: hsl(334, 30%, 88%);
+  color: hsl(334, 78%, 20%);
+}
+
+.login-container.dark .social-button {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: hsl(334, 30%, 90%);
+}
+
+.social-button:hover {
+  border-color: hsl(345, 100%, 38%);
+  color: hsl(345, 100%, 38%);
+  background: hsla(345, 100%, 38%, 0.08);
+}
+
+/* --- Sign-up Prompt --- */
+.signup-prompt {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.login-container.light .signup-prompt { color: hsl(334, 20%, 50%); }
+.login-container.dark  .signup-prompt { color: hsl(334, 20%, 65%); }
+
+.signup-prompt a {
+  color: hsl(345, 100%, 38%);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.signup-prompt a:hover { text-decoration: underline; }
+
+/* --- Mobile responsiveness --- */
+@media (max-width: 480px) {
+  .login-card-inner { padding: 1.75rem 1.25rem; }
+  .login-header h1  { font-size: 1.5rem; }
+}
+
+/* --- Animated auth background for signup/other auth pages --- */
+.animated-auth-bg {
+  background: hsl(334, 40%, 8%) !important;
+}
